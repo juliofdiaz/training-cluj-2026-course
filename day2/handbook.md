@@ -15,7 +15,7 @@
 
 Coffee 10:30 and 15:00 · lunch 12:30–13:30.
 
-Two folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (bacass, 09:30), and **`~/course/day1/3_bactflow/`**, your own pipeline from yesterday, which gets a species check and then runs in the cloud. Every block of commands starts with the `cd` line for its folder: run it first. Same conventions as Day 1: **Answer:** goes in your notes file, `~/course/notes.md`. Stuck for 3 minutes? Raise your hand, and an instructor comes to you.
+Three folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (bacass, 09:30); **`~/course/day1/3_bactflow/`**, your own pipeline from yesterday, which gets a species check and then runs in the cloud; and **`~/course/day2/2_capstone/`** for the capstone (14:00). Every block of commands starts with the `cd` line for its folder: run it first. Same conventions as Day 1: **Answer:** goes in your notes file, `~/course/notes.md`. Stuck for 3 minutes? Raise your hand, and an instructor comes to you.
 
 ---
 
@@ -104,7 +104,7 @@ The first input is your trimmed reads, `[meta, reads]`: the same shape you built
 | Where in `nextflow.config` | Add |
 |---|---|
 | In `params { }` | `mash_db = "${projectDir}/../../data/mash/refseq.genomes.k21s1000.msh"` |
-| At the very end | `process { withName: 'MASH_SCREEN' { ext.args = '-w -i 0.9' } }` |
+| At the very end: three lines | `process {`, then `withName: 'MASH_SCREEN' { ext.args = '-w -i 0.9' }`, then `}` |
 
 `-w` keeps one best genome per group of near-identical genomes; `-i 0.9` hides weak matches. The module never hard-codes these: your config supplies them. Every nf-core module works this way.
 
@@ -113,16 +113,16 @@ The first input is your trimmed reads, `[meta, reads]`: the same shape you built
 ```bash
 cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
-sort -gr results/species/SA01.screen | head -3
+for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phage results/species/$s.screen | sort -gr | head -3; done
 ```
 
-**Done when:** MASH_SCREEN shows `8 of 8` while every other step says `cached`, and the top line for SA01 names *Staphylococcus aureus*.
+**Done when:** MASH_SCREEN shows `8 of 8` while every other step says `cached`, and each isolate prints at least one line naming *Staphylococcus aureus*.
 
-How to read a `.screen` file, one genome per line: **identity** (1 = identical), **shared** fingerprints (out of 1000), **median depth**, a p-value, then the genome's name. Lines naming a *Staphylococcus* **phage** are normal: *S. aureus* genomes carry phages.
+How to read a `.screen` file, one genome per line: **identity** (1 = identical), **shared** fingerprints (out of 1000), **median depth**, a p-value, then the genome's name. The loop hides lines naming a **phage**: those are normal, because *S. aureus* genomes carry phages.
 
 **Answer:** does any of your 8 isolates list something other than *Staphylococcus*? Is any depth very different from the others? Write it down: you need it in the capstone.
 
-Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bactflow`) is this step finished, module included. You may also meet the nf-core command-line tool's way of doing step 1, `nf-core modules install mash/screen`: the same module. We use Nextflow's own command, so there's nothing extra to install.
+Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bactflow`) is this step finished, module included: then run the step 5 command again. You may also meet the nf-core command-line tool's way of doing step 1, `nf-core modules install mash/screen`: the same module. We use Nextflow's own command, so there's nothing extra to install.
 
 ---
 
@@ -136,7 +136,7 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 
 | AWS word | Think of it as | In this course |
 |---|---|---|
-| Region | The city where the data centre is | eu-central-1, Frankfurt |
+| Region | The city where the data centre is | eu-west-2, London |
 | IAM | Keys and badges: who may open which door | Your course machine's role |
 | S3 | A warehouse of labelled boxes | Reads, work folders, results |
 | EC2 | Workbenches rented by the second | Batch rents them for you |
@@ -158,6 +158,8 @@ aws sts get-caller-identity                   # who AWS thinks you are
 aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 ```
 
+**Done when:** the check's last line says `Ready.`, and `aws s3 ls` lists the reads.
+
 `COURSE_USER` is your own folder in the shared bucket. **Never** paste access keys into a file or a chat.
 
 ### 6.3 Read the cloud settings (11:40, the instructor demonstrates first)
@@ -168,9 +170,11 @@ aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|region'
 # "Unknown configuration profile: 'awsbatch'"? Your conf/awsbatch.config is missing.
-# Copy the course config files (this replaces your nextflow.config):
-# cp -r ~/course/help/pipeline/{nextflow.config,conf} .
+# Copy the course config files (this replaces your nextflow.config, species check included):
+# cp -r ~/course/help/checkpoints/step4/{nextflow.config,conf} .
 ```
+
+**Done when:** the output shows `executor = 'awsbatch'` and a `workDir` ending in your course ID.
 
 **Answer:** which files in your pipeline did you have to change to run in the cloud?
 
@@ -178,7 +182,7 @@ nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|re
 
 **What we're doing:** running your pipeline, species check included, on 20 isolates in the cloud, changing only the profile.
 
-**Answer before you press enter:** yesterday your machine needed how many minutes for 8 isolates? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
+**Answer before you press enter:** yesterday your machine needed how many minutes for 8 isolates (your answer from Day 1 §3.3)? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
@@ -204,12 +208,14 @@ If the run stops or fails, fix the cause and run `bash run_aws.sh` again from th
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
-aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head
-nextflow log last -f name,native_id,status,realtime
-aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/
+aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head        # one folder per task, now in S3
+nextflow log | tail -1                                      # your run: STATUS is - while it goes
+aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/      # one .screen file per isolate, as they finish
 ```
 
-`native_id` is the Batch job that ran each task. **Answer:** how many `.screen` files are in your cloud `species/` folder so far? The run is finished when there are 20, and MULTIQC has run.
+**Done when:** you have seen your work folders in S3, and you know how many of your 20 isolates are screened. **Answer:** how many `.screen` files are in your cloud `species/` folder so far? The run is finished when there are 20.
+
+(The instructor shows one of your jobs and its log in the console on the projector. `nextflow log last` with `-f` doesn't work while the run is going: the run keeps its records locked until it ends.)
 
 **Before lunch:** if the run is still going, leave your laptop open, or simply run `bash run_aws.sh` again after lunch: `-resume` reuses every finished task.
 
@@ -248,15 +254,15 @@ diff results/pipeline_info/software_versions.tsv results_aws/pipeline_info/softw
 nextflow log                       # DURATION column: wall-clock time of each run
 ```
 
-In `nextflow log`, compare two rows: yesterday's run from about 14:30, the one that assembled all 8 (see its TIMESTAMP), and today's run with `-profile awsbatch`. **Done when:** the diff prints `identical`, and the table below is in your notes file.
+In `nextflow log`, compare two rows: yesterday's run from about 14:30 (see its TIMESTAMP; it assembled 6 of the 8, because SA01 and SA02 were already done) and today's run with `-profile awsbatch`. **Done when:** the diff prints `identical`, and the table below is in your notes file.
 
-Cloud run stopped or not finished (for example, you closed your laptop over lunch)? Run `bash run_aws.sh` again in this folder: finished tasks are reused.
+Cloud run still going? Do everything except the `diff` now, and run the `sync` and `diff` lines again at 14:00: `software_versions.tsv` is written when the run ends. Stopped (for example, you closed your laptop over lunch)? Run `bash run_aws.sh` again in this folder: finished tasks are reused.
 
 Then look at the cloud's species check for the 8 course isolates:
 
 ```bash
 cd ~/course/day1/3_bactflow
-for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; sort -gr results_aws/species/$s.screen | head -2; done
+for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phage results_aws/species/$s.screen | sort -gr | head -3; done
 ```
 
 **Answer**, in your notes file:
@@ -265,7 +271,7 @@ for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; sort -gr resu
 |---|---|---|
 | Isolates | 8 | 20 |
 | Wall-clock time | | |
-| Most CPUs one task got | 4 | |
+| CPUs SHOVILL got (`nextflow log last -f name,cpus \| grep SHOVILL \| head -1`, once the run has ended) | 4 | |
 | Tool versions | | identical? |
 
 Why was the cloud run not 20 times faster, or 2.5 times slower?

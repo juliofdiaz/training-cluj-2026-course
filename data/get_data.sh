@@ -4,8 +4,6 @@
 #   bash ~/course/data/get_data.sh                # course reads (~1 GB) + samplesheets, into ~/course/data/reads/
 #   bash ~/course/data/get_data.sh mash           # the species-check database for Day 2 (Mash RefSeq sketch,
 #                                                 # 0.75 GB), into ~/course/data/mash/
-#   bash ~/course/data/get_data.sh bacass-demo    # the trainers' finished nf-core/bacass run (~30 MB),
-#                                                 # into ./results_bacass_demo/ (run it from ~/course/day2/1_nfcore/)
 #
 # The instructors publish both files once.
 # COURSE_RELEASE_URL overrides the release; COURSE_DATA_URL overrides the reads only.
@@ -20,14 +18,6 @@ if [[ "${1:-}" == "mash" ]]; then
   curl -fL --retry 5 -o "$DB.part" "${COURSE_MASH_URL:-$RELEASE/refseq.genomes.k21s1000.msh}"
   [[ $(wc -c < "$DB.part") -eq $SIZE ]] || { echo "Download incomplete: run this again" >&2; exit 1; }
   mv "$DB.part" "$DB" && echo "Done: $DB"
-  exit 0
-fi
-
-if [[ "${1:-}" == "bacass-demo" ]]; then
-  if [[ -d results_bacass_demo ]]; then echo "results_bacass_demo/ is already here."; exit 0; fi
-  echo "Downloading the finished bacass run from $RELEASE"
-  curl -fL --retry 5 "$RELEASE/bacass_demo.tar.gz" | tar -xz
-  echo "Done: $(pwd)/results_bacass_demo"
   exit 0
 fi
 

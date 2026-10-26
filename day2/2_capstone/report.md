@@ -6,7 +6,7 @@ Expected for *S. aureus*: genome ≈ 2.7–3.0 Mb, GC ≈ 32.5–33% (both reads
 
 Copy each Verdict and Reason into your rows of the class spreadsheet at 15:45.
 
-| Isolate | Bases after QC | Est. depth (×) | Read GC % | Mean read length | # contigs (≥500 bp) | Total length | N50 | Species found by Mash (top, not phages) | Verdict | Reason |
+| Isolate | Bases after QC | Est. depth (×) | Read GC % | Mean read length | # contigs (≥500 bp) | Total length | N50 | Every species Mash found, except phages (shared/1000, depth) | Verdict | Reason |
 |---|---|---|---|---|---|---|---|---|---|---|
 | SA01 | | | | | | | | | | |
 | SA02 | | | | | | | | | | |

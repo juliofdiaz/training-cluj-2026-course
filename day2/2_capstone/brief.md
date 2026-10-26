@@ -17,7 +17,7 @@ The infection-control lead will make decisions based on your report, and wants t
 
 All paths below are inside `results_aws/`: your cloud results. In this folder, `results_aws` is a shortcut to `~/course/day1/3_bactflow/results_aws/`. It holds 20 isolates; this question is about **SA01–SA08** only. The species check is in `results_aws/species/`, one `.screen` file per isolate.
 
-**No `results_aws/`** (your cloud run failed)? Use the same paths inside your laptop results, `~/course/day1/3_bactflow/results/`: SA01–SA08, species check included.
+**No `results_aws/`** (your cloud run failed)? Use the same paths inside your laptop results, `~/course/day1/3_bactflow/results/`: SA01–SA08, species check included. In the hint commands, type `~/course/day1/3_bactflow/results/` wherever they say `results_aws/`.
 
 Fill in **`report.md`**, in this folder:
 
@@ -43,11 +43,11 @@ At 15:45, open the class spreadsheet and fill in **Verdict** (PASS, WARN or FAIL
 ## Hints (always here: read them only if stuck after 15 minutes)
 
 <details><summary>Hint 1</summary>
-Compare the total number of bases after filtering (fastp, MultiQC General Statistics) with the expected genome size (≈2.8 Mb). What depth of coverage does each isolate have? What happened to its MLST call and its AMR genes?
+In MultiQC's General Statistics, multiply **Reads After Filtering** by **Mean R1 Length**: that is roughly the bases after QC. Divide by the genome size (≈2.8 Mb) for the depth. (The species check's third column, median depth, tells the same story.) What depth does each isolate have? What happened to its MLST call and its AMR genes?
 </details>
 
 <details><summary>Hint 2</summary>
-Assembly-level numbers can look perfectly normal for a contaminated sample. Look at the <b>reads</b> instead: compare GC content and mean read length per isolate in the fastp section of MultiQC.
+Assembly-level numbers can look perfectly normal for a contaminated sample. Look at the <b>reads</b> instead: compare **GC content** and **Mean R1 Length** per isolate in MultiQC's General Statistics.
 </details>
 
 <details><summary>Hint 3</summary>
@@ -64,11 +64,11 @@ Does that contig look like the rest of the genome?
 
 <details><summary>Hint 4</summary>
 
-Your species check lists the genomes Mash found in each isolate's reads. Look at the top lines of every isolate (phage lines are normal):
+Your species check lists the genomes Mash found in each isolate's reads. This prints the top lines of every isolate, without the phage lines (those are normal):
 
 ```bash
 cd ~/course/day2/2_capstone
-for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; sort -gr results_aws/species/$s.screen | head -3; done
+for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phage results_aws/species/$s.screen | sort -gr | head -3; done
 ```
 
 Is every isolate only *Staphylococcus*? Compare the third column (median depth) between isolates too.

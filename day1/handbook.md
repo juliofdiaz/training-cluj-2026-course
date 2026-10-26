@@ -38,7 +38,7 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-Connect with the card you were given. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, type `participant@<address>` and the password. Or, in a terminal: `ssh participant@<address>`. Then:
+Connect with the card you were given. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, type `<login>@<address>` (both are on your card) and the password. Or, in a terminal: `ssh <login>@<address>`. Then:
 
 ```bash
 bash ~/course/tools/check_vm.sh
@@ -69,11 +69,14 @@ Now on real data. The container sees only the folders you share with `-v`: the r
 
 ```bash
 cd ~/course/day1/1_containers
+IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as above
 docker run --rm -u $(id -u):$(id -g) -v ~/course/data/reads:/data -v "$PWD":/work -w /work $IMG \
   fastp -i /data/SA01_R1.fastq.gz -I /data/SA01_R2.fastq.gz -o /tmp/r1.fq.gz -O /tmp/r2.fq.gz \
         -j SA01.fastp.json -h SA01.fastp.html
 ls -l SA01.fastp.*
 ```
+
+**Done when:** `ls` shows `SA01.fastp.html` and `SA01.fastp.json`.
 
 **Answer:** where did `/tmp/r1.fq.gz` go? (Hint: only folders shared with `-v` stay.)
 
@@ -229,6 +232,8 @@ nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv
 
 **Done when:** FASTP and SHOVILL both end with `8 of 8, cached: 2`. It takes a few minutes: keep that terminal open until it finishes.
 
+**Answer:** how many minutes did it take? (The `Duration` line at the end.) You compare it with the cloud tomorrow.
+
 > **From now on, don't change the FASTP or SHOVILL code.** Changing it makes all 8 assemblies run again.
 
 Finished early? Open `results/pipeline_info/timeline_*.html`: which task took longest?
@@ -252,7 +257,7 @@ cd ~/course/day1/3_bactflow
 mkdir -p modules
 ```
 
-What goes in `modules/mlst.nf`:
+What goes in `modules/mlst.nf`. Easiest start: copy the whole FASTP process from `main.nf` into the new file, then change each part to the value in this table:
 
 | Part | Value |
 |---|---|
@@ -277,7 +282,7 @@ Stuck? Compare with `~/course/help/pipeline/modules/mlst.nf`.
 
 ### 4.3 Copy the full pipeline (15:50)
 
-**What we're doing:** getting the finished bactflow (assembly QC, resistance genes, one QC report, tool versions) without typing it. Tomorrow you run exactly these files on 20 isolates.
+**What we're doing:** getting the finished bactflow (assembly QC, resistance genes, one QC report, tool versions) without typing it. Tomorrow you add one tested step from nf-core to these files, then run them on 20 isolates in the cloud.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -289,6 +294,7 @@ ls results/multiqc/
 Only the new steps run (and MLST once more). **Done when:** `ls` shows `multiqc_report.html`. Then look at three small tables:
 
 ```bash
+cd ~/course/day1/3_bactflow
 cat results/typing/mlst_summary.tsv
 column -t results/amr/amr_summary.tsv
 cat results/pipeline_info/software_versions.tsv
@@ -306,7 +312,7 @@ cat results/typing/mlst_summary.tsv
 column -t results/amr/amr_summary.tsv
 ```
 
-**Answer:** are all 8 results trustworthy? Note anything odd in your notes file. (Don't fix it: tomorrow's capstone is about this.)
+**Answer:** are all 8 results trustworthy? Note anything odd in your notes file. (Don't fix it: tomorrow's capstone is about this.) **Done when:** your answer is in `~/course/notes.md`.
 
 ---
 
@@ -342,6 +348,7 @@ Not part of the course time, and nothing tomorrow depends on it. git keeps a his
 git config --global user.name  "Your Name"
 git config --global user.email "you@example.org"   # any address: nothing is sent anywhere
 cd ~/course/day1/3_bactflow
+cd ~/course/day1/3_bactflow                        # your pipeline's folder
 git init -b main                                   # start a history in this folder
 cp ~/course/tools/gitignore .gitignore           # keep work/, results/ and reads out of it
 git add .                                          # choose what goes into the snapshot
@@ -352,6 +359,7 @@ git log --oneline                                  # list the snapshots
 Now change something small: add a comment line above `MLST(SHOVILL.out.contigs)` in `main.nf`. Then:
 
 ```bash
+cd ~/course/day1/3_bactflow
 git diff                                           # what changed since the last snapshot?
 git commit -am "Explain the MLST step"             # snapshot every changed file git already knows
 git log --oneline

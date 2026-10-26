@@ -11,6 +11,8 @@ process SHOVILL {
     tuple val(meta), path("${meta.id}.shovill.log"), emit: log
     tuple val("${task.process}"), val('shovill'), eval("shovill --version | sed 's/shovill //'"), topic: versions
 
+    // --ram is only a ceiling for the assembler (these small genomes use about 2 GB),
+    // but shovill refuses anything below 8, so small machines still pass 8
     script:
     """
     shovill \\
@@ -18,7 +20,7 @@ process SHOVILL {
         --outdir shovill_out \\
         --gsize ${params.genome_size} \\
         --cpus ${task.cpus} \\
-        --ram ${task.memory.toGiga()} \\
+        --ram ${Math.max(8, task.memory.toGiga())} \\
         --tmpdir . \\
         ${params.shovill_args}
 

@@ -72,12 +72,12 @@ have git && ok "git $(git --version | awk '{print $3}')" || warn "git not found 
 
 section "Resources"
 CPUS=$(nproc 2>/dev/null || sysctl -n hw.ncpu)
-[ "$CPUS" -ge 4 ] && ok "$CPUS CPUs" || warn "$CPUS CPUs (4 recommended)" "runs still work, just slower"
+[ "$CPUS" -ge 4 ] && ok "$CPUS CPUs" || warn "$CPUS CPUs (4 recommended)" "runs still work, just slower: the pipeline caps each task at $CPUS CPUs"
 if [ -r /proc/meminfo ]; then MEM=$(awk '/MemTotal/ {printf "%d", $2/1024/1024}' /proc/meminfo)
 else MEM=$(( $(sysctl -n hw.memsize) / 1024 / 1024 / 1024 )); fi
 if   [ "$MEM" -ge 14 ]; then ok "${MEM} GB RAM"
-elif [ "$MEM" -ge 8 ];  then warn "${MEM} GB RAM (16 recommended)" "lower process_high memory to 6.GB in conf/base.config if Shovill is killed (exit 137)"
-else bad "${MEM} GB RAM: Shovill needs about 8 GB" "ask for a bigger VM"; fi
+elif [ "$MEM" -ge 7 ];  then warn "${MEM} GB RAM (16 recommended)" "runs still work: the pipeline caps each task at 85% of this machine's memory"
+else bad "${MEM} GB RAM: Shovill needs about 6 GB" "ask for a bigger VM"; fi
 FREE=$(df -Pk . | awk 'NR==2 {print int($4/1024/1024)}')
 [ "$FREE" -ge 10 ] && ok "${FREE} GB free disk" || bad "Only ${FREE} GB free disk (need 10)" "clean up, or ask for a bigger disk"
 

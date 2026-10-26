@@ -8,7 +8,7 @@ FROM mambaorg/micromamba:2.9.0
 # 2. Labels make the image self-describing
 LABEL org.opencontainers.image.title="seqkit" \
       org.opencontainers.image.description="seqkit for the Reproducible Genomics course" \
-      org.opencontainers.image.source="https://github.com/<your-org>/reproducible-genomics-course"
+      org.opencontainers.image.source="https://github.com/juliofdiaz/training-cluj-2026-course"
 
 # 3. Pin the tool version AND the channels it comes from
 RUN micromamba install -y -n base -c conda-forge -c bioconda \

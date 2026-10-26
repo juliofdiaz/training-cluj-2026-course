@@ -8,7 +8,7 @@
 # The instructors publish both files once.
 # COURSE_RELEASE_URL overrides the release; COURSE_DATA_URL overrides the reads only.
 set -euo pipefail
-RELEASE=${COURSE_RELEASE_URL:-"https://github.com/<your-org>/reproducible-genomics-course/releases/download/course-data-v1"}
+RELEASE=${COURSE_RELEASE_URL:-"https://github.com/juliofdiaz/training-cluj-2026-course/releases/download/course-data-v1"}
 
 if [[ "${1:-}" == "bacass-demo" ]]; then
   if [[ -d results_bacass_demo ]]; then echo "results_bacass_demo/ is already here."; exit 0; fi

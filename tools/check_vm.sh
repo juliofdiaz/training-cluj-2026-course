@@ -45,8 +45,8 @@ if have nextflow; then
   else bad "Nextflow $NV is older than $REQ_NXF (the course pipeline uses workflow outputs and topic channels)" \
            "export NXF_VER=$PIN_NXF   then run this check again (the launcher downloads it once, ~100 MB)"; fi
   if [ -n "${NV:-}" ] && ver_ge "$NV" "$REQ_NXF"; then
-    if nextflow lint pipeline >/dev/null 2>&1; then ok "Course pipeline passes 'nextflow lint' with this version"
-    else bad "Course pipeline fails 'nextflow lint' with Nextflow $NV" "run 'nextflow lint pipeline' to see why"; fi
+    if nextflow lint help/pipeline >/dev/null 2>&1; then ok "Course pipeline passes 'nextflow lint' with this version"
+    else bad "Course pipeline fails 'nextflow lint' with Nextflow $NV" "run 'cd ~/course && nextflow lint help/pipeline' to see why"; fi
   fi
 else bad "Nextflow not found" "curl -s https://get.nextflow.io | bash && sudo mv nextflow /usr/local/bin/"; fi
 

@@ -1,0 +1,21 @@
+# Checkpoints
+
+If you fall behind in S4 or S5, copy the checkpoint for the step the class is on into your working folder and carry on:
+
+```bash
+cd ~/course/day1/3_bactflow
+cp -r ~/course/help/checkpoints/step2/. .
+nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet_test.csv -resume
+```
+
+Always launch from the same folder (`~/course/day1/3_bactflow/`). `-resume` looks for `work/` and `.nextflow/` in the folder you launch from.
+
+| Checkpoint | Session / time | Contains |
+|---|---|---|
+| `step1/` | S4, 13:40 | Samplesheet → FASTP. Single file. Minimal config. Participants copy and read it (Step 1). |
+| `step2_start/` | S4, 14:00 | Step 2's starting point: SHOVILL written but not connected; three TODO lines. |
+| `step2/` | S4, ≈14:25 | + SHOVILL connected. Labels, resources, `docker` profile, reports. The Step 2 answer. |
+| `step3/` | (reference) | Refactored into `modules/`. + QUAST (cohort), MLST, ABRICATE. Not used in class since Day 1 was simplified; kept for Further reading. |
+| `~/course/help/pipeline/` | S5, end | + ABRICATE summary, MultiQC, `software_versions.tsv`, a `test` profile, and the settings used on Day 2 |
+
+Each checkpoint is self-contained and passes `nextflow lint`.

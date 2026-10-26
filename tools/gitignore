@@ -1,0 +1,26 @@
+# Optional git page (Day 1 handbook §6). Copy this file into your pipeline folder as .gitignore:
+#   cp ~/course/tools/gitignore ~/course/day1/3_bactflow/.gitignore
+
+# Nextflow scratch and logs: large, machine-specific, never commit
+work/
+.nextflow/
+.nextflow.log*
+*.log
+
+# Full result folders: large, and the pipeline can make them again
+results/
+results_*/
+
+# Data: reads are downloaded, not committed
+*.fastq.gz
+*.fq.gz
+*.bam
+
+# Secrets: never commit credentials or local environment files
+.env
+*.pem
+.aws/
+
+# Editor and OS clutter
+.DS_Store
+.vscode/

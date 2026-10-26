@@ -6,7 +6,7 @@ Expected for *S. aureus*: genome ≈ 2.7–3.0 Mb, GC ≈ 32.5–33% (both reads
 
 Copy each Verdict and Reason into your rows of the class spreadsheet at 15:45.
 
-| Isolate | Bases after QC | Est. depth (×) | Read GC % | Mean read length | # contigs (≥500 bp) | Total length | N50 | Kraken2 top species (%) | Verdict | Reason |
+| Isolate | Bases after QC | Est. depth (×) | Read GC % | Mean read length | # contigs (≥500 bp) | Total length | N50 | Species found by Mash (top, not phages) | Verdict | Reason |
 |---|---|---|---|---|---|---|---|---|---|---|
 | SA01 | | | | | | | | | | |
 | SA02 | | | | | | | | | | |
@@ -38,12 +38,12 @@ Thresholds you used, and why: …
 |---|---|
 | bactflow version (the course's `pipeline/`, and the date you copied it) | |
 | Nextflow version | |
-| nf-core/bacass revision | |
+| Species check: nf-core module + database | `nf-core/mash/screen`, `refseq.genomes.k21s1000.msh` (RefSeq sketch) |
 | Container engine + profile | |
 | AMR database + version/date | (from `software_versions.tsv`) |
 | MLST scheme / tool version | |
 | Input checksums | `~/course/data/reads/MD5SUMS` |
-| Params (bacass `params.yaml`; bactflow options on the command line) | |
+| Params (bactflow options on the command line, and `ext.args` for Mash) | |
 
 What would **still** be needed for someone in another lab to reproduce this exactly? …
 

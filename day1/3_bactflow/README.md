@@ -1,6 +1,6 @@
 # Your pipeline: bactflow
 
-You build your own pipeline in this folder, starting at 13:40 on Day 1 (Day 1 handbook §3), and run it again on Day 2.
+You build your own pipeline in this folder, starting at 13:40 on Day 1 (Day 1 handbook §3). On Day 2 you add an nf-core module to it (Day 2 handbook §5.4) and run it in the cloud.
 
 Always run Nextflow **from this folder**:
 

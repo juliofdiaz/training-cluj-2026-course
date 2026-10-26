@@ -8,6 +8,7 @@ IMAGES=(
   quay.io/biocontainers/mlst:2.35.0--hdfd78af_1
   quay.io/biocontainers/abricate:1.4.0--h05cac1d_0
   quay.io/biocontainers/multiqc:1.35--pyhdfd78af_2
+  quay.io/biocontainers/mash:2.3--he348c14_1
   quay.io/biocontainers/ncbi-amrfinderplus:4.2.7--hf69ffd2_0
   mambaorg/micromamba:2.9.0
 )

@@ -60,6 +60,6 @@ results/
 
 ## Known limitations (by design: these are capstone discussion points)
 
-- No species identification or contamination check (compare nf-core/bacass with Kraken2).
+- No species identification or contamination check: on Day 2 you add one, the nf-core module `mash/screen` (`~/course/help/checkpoints/step4/` has it).
 - No automatic QC thresholds or flags (capstone extension E2).
 - No annotation, no SNP-level relatedness analysis.

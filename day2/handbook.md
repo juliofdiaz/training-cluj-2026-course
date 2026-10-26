@@ -7,23 +7,23 @@
 | Time | Session | By the end you will have |
 |---|---|---|
 | 09:00 | Recap | Yesterday, in four questions |
-| 09:15 | S6 nf-core | A community pipeline set up for our isolates, and checked |
+| 09:15 | S6 nf-core | A community pipeline checked, and a tested nf-core module added to **your own** pipeline |
 | 10:45 | S7 AWS | What AWS is, then your pipeline run on rented cloud machines |
-| 13:30 | After lunch | Your cloud runs checked, and laptop versus cloud compared |
+| 13:30 | After lunch | Your cloud run checked, and laptop versus cloud compared |
 | 14:00 | S8 Capstone | A decision: which isolates can we trust? |
 | 16:25 | Wrap-up | Cloud cleaned up, **your verdicts in the class spreadsheet** |
 
-Coffee 10:30 and 15:00 · lunch 12:30–13:30. The long cloud runs happen over lunch, so nobody waits for them.
+Coffee 10:30 and 15:00 · lunch 12:30–13:30.
 
-Two folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (bacass), and **`~/course/day1/3_bactflow/`**, your own pipeline from yesterday, which you now run in the cloud. Every block of commands starts with the `cd` line for its folder: run it first. Same conventions as Day 1: **Answer:** goes in your notes file, `~/course/notes.md`. Stuck for 3 minutes? Raise your hand, and an instructor comes to you.
+Two folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (bacass, 09:30), and **`~/course/day1/3_bactflow/`**, your own pipeline from yesterday, which gets a species check and then runs in the cloud. Every block of commands starts with the `cd` line for its folder: run it first. Same conventions as Day 1: **Answer:** goes in your notes file, `~/course/notes.md`. Stuck for 3 minutes? Raise your hand, and an instructor comes to you.
 
 ---
 
-## 5. nf-core: a community pipeline (S6, 09:15–10:30)
+## 5. nf-core: use a community pipeline, then borrow one of its modules (S6, 09:15–10:30)
 
-*nf-core is a cookbook in which every recipe was tested in many kitchens before it was printed.*
+*nf-core is a cookbook in which every recipe was tested in many kitchens before it was printed. Today you use one whole recipe, then take one tested step and add it to your own.*
 
-### 5.1 Read a pipeline like a user (09:30, the instructor demonstrates)
+### 5.1 Read a pipeline like a user (09:25, the instructor demonstrates)
 
 **What we're doing:** watching how to read a community pipeline's help and documentation. Nothing to type now: the commands are here for later.
 
@@ -38,9 +38,9 @@ Afterwards, on <https://nf-co.re/bacass/2.6.1>, **answer**:
 2. Which parameters are required?
 3. Why do we always add `-r 2.6.1`?
 
-### 5.2 Prepare bacass for our 8 isolates (09:40)
+### 5.2 Prepare bacass for our 8 isolates (09:30)
 
-**What we're doing:** setting up a community pipeline for our 8 isolates, and checking the setup without running anything.
+**What we're doing:** setting up a community pipeline for our 8 isolates, and checking the setup without running anything. (Running it would take over half an hour: checking it is the skill.)
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -65,39 +65,64 @@ nextflow run nf-core/bacass -r 2.6.1 -profile docker -params-file params.yaml -p
 
 **Answer:** what is the difference between a setting in `params.yaml` and a setting in a `-c` config file? Which one does `assembler: unicycler` belong in?
 
-### 5.3 Explore a finished bacass run (10:05)
+### 5.3 A tested step from nf-core (09:45, the instructor demonstrates)
 
-**What we're doing:** comparing a finished nf-core/bacass run with the pipeline you built yesterday. The instructors ran bacass on our 8 samples earlier. Download it into `results_bacass_demo/`:
-
-```bash
-cd ~/course/day2/1_nfcore
-bash ~/course/data/get_data.sh bacass-demo
-```
-
-Download fails? Raise your hand: an instructor copies the run to your machine. Then open `results_bacass_demo/multiqc/multiqc_report.html` and `results_bacass_demo/pipeline_info/`, copy this table into your notes file and fill in the bacass column:
-
-| | bactflow (yours) | nf-core/bacass |
-|---|---|---|
-| Processes in the run | 7 | |
-| Assembler | Shovill (SPAdes) | |
-| Annotation | none | |
-| Species or contamination check | none | |
-| Where tool versions are recorded | `software_versions.tsv` | |
-| Parameter checking before the run | none | |
-
-### 5.4 Stretch (optional): borrow an nf-core module
-
-Work in a copy: your own pipeline in `~/course/day1/3_bactflow` runs in the cloud at 11:40 and must stay as it is.
+**What we're doing:** watching. Your bactflow has no species check: if a sample is contaminated, nothing in it tells you. nf-core has a tested module for that, **MASH_SCREEN**. Mash compares your reads with about 90,000 reference genomes and lists the ones it finds in them. Nothing to type yet.
 
 ```bash
-mkdir -p ~/course/day2/1_nfcore/stretch && cd ~/course/day2/1_nfcore/stretch
-cp -r ~/course/help/pipeline/. .       # a copy of the full pipeline
-nextflow module search abricate
-nextflow module install nf-core/abricate/run
-ls modules/nf-core/abricate/run/
+cd ~/course/day1/3_bactflow
+nextflow module search mash            # nf-core's modules, from Nextflow's own module registry
 ```
 
-Compare it with your own ABRICATE. Where do its tool options come from? (Hint: `ext.args`.)
+### 5.4 Add the species check to your pipeline (09:55)
+
+**What we're doing:** installing an nf-core module into the pipeline you built yesterday, connecting it, and running it. Only the new step runs; everything from yesterday is reused.
+
+**1. Install it.** One command; it adds the folder `modules/nf-core/mash/screen/` and changes nothing else.
+
+```bash
+cd ~/course/day1/3_bactflow
+nextflow module install nf-core/mash/screen
+ls modules/nf-core/mash/screen/
+```
+
+**2. Read it.** Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs? What does it output? Where do Mash's own options come from? (Hint: `task.ext.args`.)
+
+**3. Connect it: four places in `main.nf`.**
+
+| Where in `main.nf` | Add |
+|---|---|
+| At the top, with the other `include` lines | `include { MASH_SCREEN } from './modules/nf-core/mash/screen'` |
+| In `main:`, after the `SHOVILL(...)` line | `MASH_SCREEN(FASTP.out.reads, channel.value([[id: 'refseq'], file(params.mash_db, checkIfExists: true)]))` |
+| In `publish:`, with the other lines | `species = MASH_SCREEN.out.screen` |
+| In `output { }`, like `mlst` | `species { path 'species' }` (three lines) |
+
+The first input is your trimmed reads, `[meta, reads]`: the same shape you built yesterday. The second is the reference database, which the module also expects as `[meta, file]`.
+
+**4. Configure it: two lines in `nextflow.config`.**
+
+| Where in `nextflow.config` | Add |
+|---|---|
+| In `params { }` | `mash_db = "${projectDir}/../../data/mash/refseq.genomes.k21s1000.msh"` |
+| At the very end | `process { withName: 'MASH_SCREEN' { ext.args = '-w -i 0.9' } }` |
+
+`-w` keeps one best genome per group of near-identical genomes; `-i 0.9` hides weak matches. The module never hard-codes these: your config supplies them. Every nf-core module works this way.
+
+**5. Run it on your 8 isolates.**
+
+```bash
+cd ~/course/day1/3_bactflow
+nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
+sort -gr results/species/SA01.screen | head -3
+```
+
+**Done when:** MASH_SCREEN shows `8 of 8` while every other step says `cached`, and the top line for SA01 names *Staphylococcus aureus*.
+
+How to read a `.screen` file, one genome per line: **identity** (1 = identical), **shared** fingerprints (out of 1000), **median depth**, a p-value, then the genome's name. Lines naming a *Staphylococcus* **phage** are normal: *S. aureus* genomes carry phages.
+
+**Answer:** does any of your 8 isolates list something other than *Staphylococcus*? Is any depth very different from the others? Write it down: you need it in the capstone.
+
+Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bactflow`) is this step finished, module included. You may also meet the nf-core command-line tool's way of doing step 1, `nf-core modules install mash/screen`: the same module. We use Nextflow's own command, so there's nothing extra to install.
 
 ---
 
@@ -151,7 +176,7 @@ nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|re
 
 ### 6.4 Run bactflow on AWS Batch (11:48)
 
-**What we're doing:** running yesterday's pipeline on 20 isolates in the cloud, changing only the profile.
+**What we're doing:** running your pipeline, species check included, on 20 isolates in the cloud, changing only the profile.
 
 **Answer before you press enter:** yesterday your machine needed how many minutes for 8 isolates? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
 
@@ -171,70 +196,46 @@ bash run_aws.sh
 
 While it runs, watch the instructor's screen: the jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appear in EC2 by themselves. **Answer:** why do the first jobs wait in `RUNNABLE`?
 
-Look inside the cloud work folder, in a second terminal:
+If the run stops or fails, fix the cause and run `bash run_aws.sh` again from the same folder. `-resume` reuses every finished task, so you don't pay for them twice.
+
+### 6.5 While it runs: look inside the cloud (12:05)
+
+**What we're doing:** finding where the cloud keeps your run: its work folders in S3, and each task's Batch job. In a **second terminal** (VS Code: *Terminal → New Terminal*), so the run keeps going in the first:
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head
 nextflow log last -f name,native_id,status,realtime
+aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/
 ```
 
-If the run stops or fails, fix the cause and run `bash run_aws.sh` again from the same folder. `-resume` reuses every finished task, so you don't pay for them twice.
+`native_id` is the Batch job that ran each task. **Answer:** how many `.screen` files are in your cloud `species/` folder so far? The run is finished when there are 20, and MULTIQC has run.
 
-### 6.5 Launch bacass in the cloud, then go to lunch (12:05)
+**Before lunch:** if the run is still going, leave your laptop open, or simply run `bash run_aws.sh` again after lunch: `-resume` reuses every finished task.
 
-**What we're doing:** starting the community pipeline in the cloud, so it runs while you eat.
+### 6.6 After lunch: did your cloud run finish? (13:30)
 
-Open a **second terminal** (VS Code: *Terminal → New Terminal*) and leave bactflow running in the first one. In the new terminal, copy and run this whole block:
-
-```bash
-cd ~/course/day2/1_nfcore
-aws s3 cp $COURSE_BUCKET/data/bacass_samplesheet_s3.tsv .
-cat > params_aws.yaml <<EOF
-input:           bacass_samplesheet_s3.tsv
-outdir:          $COURSE_BUCKET/results/${COURSE_USER:?}/bacass
-assembly_type:   short
-assembler:       unicycler
-prokka_args:     "--fast"
-skip_busco:      true
-skip_kmerfinder: true
-kraken2db:       $COURSE_BUCKET/databases/k2_standard_08gb.tar.gz
-EOF
-nextflow run nf-core/bacass -r 2.6.1 -profile docker -c ~/course/day1/3_bactflow/conf/awsbatch.config \
-    -params-file params_aws.yaml -bg > bacass_aws.log
-```
-
-`-profile docker` means "use containers"; `-c …/conf/awsbatch.config` (your own pipeline's cloud settings) sends the tasks to AWS Batch; `-bg` runs it in the background on your course machine, so it keeps going when you close your laptop.
-
-**Done when:** `tail ~/course/day2/1_nfcore/bacass_aws.log` shows lines with `Submitted process`. Check it before you leave for lunch.
-
-### 6.6 After lunch: did your bacass run work? (13:30)
-
-**What we're doing:** checking whether the lunch-time cloud run worked, and what to do if it didn't.
-
-```bash
-cd ~/course/day2/1_nfcore
-tail -n 15 bacass_aws.log
-```
-
-**Finished?** Copy its MultiQC report, open `results_aws/bacass_multiqc/multiqc_report.html`, and look at the **Kraken2** section. Note anything odd: you need it in the capstone.
+**What we're doing:** checking that your cloud run finished, and restarting it if it didn't.
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
-aws s3 sync $COURSE_BUCKET/results/${COURSE_USER:?}/bacass/multiqc/ results_aws/bacass_multiqc/
+nextflow log | tail -1                        # STATUS of your last run: OK, ERR, or - (not finished)
+pgrep -f 'one.jar run'                        # prints a number while a run is still going
+aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/ | wc -l     # 20 when every isolate is screened
 ```
 
-**Still running?** Fine: go on to §6.7, and check again at 14:30.
+**OK and 20?** Go on to §6.7.
 
-**An error?** Run it again from the same folder, with `-resume` added. Only the unfinished tasks run:
+**`-` and `pgrep` prints a number?** Still running: go on to §6.7 and check again at 14:00.
+
+**ERR, or `-` while `pgrep` prints nothing?** The run stopped (for example when your laptop closed). Run it again in the same folder: only the unfinished tasks run.
 
 ```bash
-cd ~/course/day2/1_nfcore
-nextflow run nf-core/bacass -r 2.6.1 -profile docker -c ~/course/day1/3_bactflow/conf/awsbatch.config \
-    -params-file params_aws.yaml -resume -bg > bacass_aws.log
+cd ~/course/day1/3_bactflow
+bash run_aws.sh
 ```
 
-Fails again? Use the finished run from §5.3, in `~/course/day2/1_nfcore/results_bacass_demo/`.
+Still failing at 13:40? Go on to §6.7 with what you have, and raise your hand. The capstone also works from your laptop results (§7).
 
 ### 6.7 Compare laptop and cloud (13:40)
 
@@ -247,9 +248,16 @@ diff results/pipeline_info/software_versions.tsv results_aws/pipeline_info/softw
 nextflow log                       # DURATION column: wall-clock time of each run
 ```
 
-In `nextflow log`, compare two rows: yesterday's last run (its COMMAND ends with `samplesheet.csv -resume`) and today's run with `-profile awsbatch`. **Done when:** the diff prints `identical`, and the table below is in your notes file.
+In `nextflow log`, compare two rows: yesterday's run from about 14:30, the one that assembled all 8 (see its TIMESTAMP), and today's run with `-profile awsbatch`. **Done when:** the diff prints `identical`, and the table below is in your notes file.
 
 Cloud run stopped or not finished (for example, you closed your laptop over lunch)? Run `bash run_aws.sh` again in this folder: finished tasks are reused.
+
+Then look at the cloud's species check for the 8 course isolates:
+
+```bash
+cd ~/course/day1/3_bactflow
+for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; sort -gr results_aws/species/$s.screen | head -2; done
+```
 
 **Answer**, in your notes file:
 
@@ -282,7 +290,7 @@ ls results_aws/          # a shortcut to your cloud results in ~/course/day1/3_b
 | 15:45 | Stop. In the class spreadsheet (**<RESULTS_SHEET_URL>**), fill in **Verdict** (PASS, WARN or FAIL) and a one-line **Reason** in your 8 rows. Then prepare your one-minute verdict. |
 | 15:50 | One-minute verdicts, everyone, from your seat |
 
-All paths in the brief are inside `results_aws/` (the shortcut above). **No `results_aws/`** (your cloud run failed)? Use your laptop results in `~/course/day1/3_bactflow/results/` (SA01–SA08) and the bacass run in `~/course/day2/1_nfcore/results_bacass_demo/`. Hints are at the end of the brief, always there: try for 15 minutes first. The extension is optional: only if you finish A–C early.
+All paths in the brief are inside `results_aws/` (the shortcut above). **No `results_aws/`** (your cloud run failed)? Use your laptop results in `~/course/day1/3_bactflow/results/`: they have SA01–SA08, species check included (§5.4). Hints are at the end of the brief, always there: try for 15 minutes first. The extension is optional: only if you finish A–C early.
 
 ---
 
@@ -312,7 +320,7 @@ Your 8 rows each have an ST, resistance genes, a **Verdict** and a **Reason**.
 
 ### 8.3 Optional: keep your work
 
-The course machines are switched off after the course. To keep your work, in VS Code right-click a folder → *Download*. The useful, small parts are `~/course/day2/2_capstone/report.md`, `~/course/notes.md`, `~/course/day1/3_bactflow/results_aws/` and the settings in `~/course/day2/1_nfcore/`; skip any `work/` folder.
+The course machines are switched off after the course. To keep your work, in VS Code right-click a folder → *Download*. The useful, small parts are `~/course/day2/2_capstone/report.md`, `~/course/notes.md`, `~/course/day1/3_bactflow/results_aws/`, and `main.nf`, `nextflow.config` and `modules/` in `~/course/day1/3_bactflow/`; skip any `work/` folder.
 
 ### Final self-check
 
@@ -332,6 +340,9 @@ The course machines are switched off after the course. To keep your work, in VS 
 | `CannotPullContainerError` | Image tag typo | Check the tag in the module |
 | `exit status 137` on Batch | Out of memory | The pipeline retries with more memory automatically |
 | bacass `-preview` complains about the samplesheet | Spaces instead of tabs | `cat -A bacass_samplesheet.tsv`: separators must show as `^I` |
+| `No such file` for `refseq.genomes.k21s1000.msh` | The species database is not on your machine | `bash ~/course/data/get_data.sh mash`, or tell an instructor |
+| `nextflow module install` fails | No access to the module registry | Copy the finished step instead: `cp -r ~/course/help/checkpoints/step4/. .` |
+| MASH_SCREEN runs, but so does everything else | You changed FASTP or SHOVILL, launched from another folder, or ran something else in this folder since yesterday | `-resume` reuses the **last** run in this folder. Run `nextflow log`, copy the SESSION ID of yesterday's last run, and add it: `-resume <SESSION ID>` |
 | Results "missing" after the AWS run | They are in S3 | `aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/` |
 
 ## Glossary

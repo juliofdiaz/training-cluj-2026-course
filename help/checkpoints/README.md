@@ -17,5 +17,6 @@ Always launch from the same folder (`~/course/day1/3_bactflow/`). `-resume` look
 | `step2/` | S4, ≈14:25 | + SHOVILL connected. Labels, resources, `docker` profile, reports. The Step 2 answer. |
 | `step3/` | (reference) | Refactored into `modules/`. + QUAST (cohort), MLST, ABRICATE. Not used in class since Day 1 was simplified; kept for Further reading. |
 | `~/course/help/pipeline/` | S5, end | + ABRICATE summary, MultiQC, `software_versions.tsv`, a `test` profile, and the settings used on Day 2 |
+| `step4/` | Day 2, ≈10:20 | The full pipeline + the nf-core module MASH_SCREEN (species check) connected and configured. The Day 2 §5.4 answer. |
 
 Each checkpoint is self-contained and passes `nextflow lint`.

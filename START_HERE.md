@@ -19,8 +19,8 @@ Welcome! Everything for the two days is in this folder, `~/course`, on your own 
 |---|---|---|
 | `day1/1_containers/` | Running a tool from a container | Day 1, 10:00 |
 | `day1/2_nextflow_basics/` | Your first pipelines: `01_hello.nf`, `02_channels.nf`, `03_first_process.nf` (answers in `solutions/`) | Day 1, 11:00 |
-| `day1/3_bactflow/` | **Your own pipeline.** You build it here on Day 1 and run it again on Day 2. | Day 1 afternoon, Day 2 |
-| `day2/1_nfcore/` | Setting up a community pipeline, nf-core/bacass | Day 2, 09:15 |
+| `day1/3_bactflow/` | **Your own pipeline.** You build it here on Day 1; on Day 2 you add an nf-core module to it and run it in the cloud. | Day 1 afternoon, Day 2 |
+| `day2/1_nfcore/` | Checking a community pipeline, nf-core/bacass | Day 2, 09:30 |
 | `day2/2_capstone/` | The capstone: `brief.md`, and `report.md`, which you fill in | Day 2, 14:00 |
 | `data/` | The course reads and samplesheets. Read them, don't change them. | Both days |
 | `help/` | If you fall behind: `checkpoints/` (each step, finished) and `pipeline/` (the whole finished pipeline) | When you need it |

@@ -5,7 +5,7 @@
 
 ## Scenario
 
-An infection-control team suspects an MRSA transmission cluster on two hospital wards. The microbiology lab sequenced **8 isolates (SA01–SA08)** and sent you the reads. You have already run them through **bactflow** (laptop and AWS) and **nf-core/bacass** (AWS).
+An infection-control team suspects an MRSA transmission cluster on two hospital wards. The microbiology lab sequenced **8 isolates (SA01–SA08)** and sent you the reads. You have already run them through **bactflow** (laptop and AWS), including the species check you added this morning.
 
 The infection-control lead will make decisions based on your report, and wants to know:
 
@@ -15,9 +15,9 @@ The infection-control lead will make decisions based on your report, and wants t
 
 ## Deliverables
 
-All paths below are inside `results_aws/`: your cloud results. In this folder, `results_aws` is a shortcut to `~/course/day1/3_bactflow/results_aws/`. It holds 20 isolates; this question is about **SA01–SA08** only. The bacass report is in `results_aws/bacass_multiqc/`.
+All paths below are inside `results_aws/`: your cloud results. In this folder, `results_aws` is a shortcut to `~/course/day1/3_bactflow/results_aws/`. It holds 20 isolates; this question is about **SA01–SA08** only. The species check is in `results_aws/species/`, one `.screen` file per isolate.
 
-**No `results_aws/`** (your cloud run failed)? Use the same paths inside your laptop results, `~/course/day1/3_bactflow/results/` (SA01–SA08), and the bacass report in `~/course/day2/1_nfcore/results_bacass_demo/multiqc/`.
+**No `results_aws/`** (your cloud run failed)? Use the same paths inside your laptop results, `~/course/day1/3_bactflow/results/`: SA01–SA08, species check included.
 
 Fill in **`report.md`**, in this folder:
 
@@ -28,9 +28,9 @@ ls results_aws/                   # your cloud results, through the shortcut
 
 | Section | Evidence you should use |
 |---|---|
-| A. QC triage table (PASS / WARN / FAIL per isolate, with reasons) | bactflow MultiQC (fastp: bases, read GC, read length; QUAST), `qc/quast/report.tsv`, bacass MultiQC (**Kraken2**) |
+| A. QC triage table (PASS / WARN / FAIL per isolate, with reasons) | bactflow MultiQC (fastp: bases, read GC, read length; QUAST), `qc/quast/report.tsv`, **`species/<isolate>.screen`** (Mash) |
 | B. Typing & AMR summary for PASS isolates | `typing/mlst_summary.tsv`, `amr/amr_summary.tsv` |
-| C. Reproducibility statement | Exact commands, pipeline version, Nextflow version, `software_versions.tsv`, bacass's `params_aws.yaml`, samplesheet checksums (`MD5SUMS`) |
+| C. Reproducibility statement | Exact commands, pipeline version, Nextflow version, `software_versions.tsv` (Mash is in it now), the species database you used, samplesheet checksums (`MD5SUMS`) |
 | *Optional:* one extension from `extensions.md` (in this folder) | Only if you finish A–C early |
 
 ## Your one-minute verdict (15:50, from your seat)
@@ -63,5 +63,13 @@ Does that contig look like the rest of the genome?
 </details>
 
 <details><summary>Hint 4</summary>
-bactflow has no species or contamination check. bacass ran Kraken2. What does it say for each isolate?
+
+Your species check lists the genomes Mash found in each isolate's reads. Look at the top lines of every isolate (phage lines are normal):
+
+```bash
+cd ~/course/day2/2_capstone
+for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; sort -gr results_aws/species/$s.screen | head -3; done
+```
+
+Is every isolate only *Staphylococcus*? Compare the third column (median depth) between isolates too.
 </details>

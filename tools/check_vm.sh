@@ -55,10 +55,10 @@ if have docker && docker info >/dev/null 2>&1; then
   ok "Docker running and usable without sudo ($(docker --version | awk '{print $3}' | tr -d ,))"
   missing=0
   for img in fastp:1.4.0--h43da1c4_0 shovill:1.4.2--hdfd78af_1 quast:5.3.0--py313pl5321h5ca1c30_2 \
-             mlst:2.35.0--hdfd78af_1 abricate:1.4.0--h05cac1d_0 multiqc:1.35--pyhdfd78af_2; do
+             mlst:2.35.0--hdfd78af_1 abricate:1.4.0--h05cac1d_0 multiqc:1.35--pyhdfd78af_2 mash:2.3--he348c14_1; do
     docker image inspect "quay.io/biocontainers/$img" >/dev/null 2>&1 || missing=$((missing+1))
   done
-  [ $missing -eq 0 ] && ok "All 6 pipeline images pulled" || warn "$missing of 6 pipeline images not pulled yet" "bash ~/course/tools/pull_images.sh"
+  [ $missing -eq 0 ] && ok "All 7 pipeline images pulled" || warn "$missing of 7 pipeline images not pulled yet" "bash ~/course/tools/pull_images.sh"
 elif have docker && [ "$(uname)" = Darwin ]; then
   bad "Docker is installed but not running" "start Docker Desktop, wait for it to say 'running', then run this again"
 elif have docker; then
@@ -98,6 +98,8 @@ if [ -f data/reads/MD5SUMS ]; then
   else bad "Course reads fail their checksums" "bash ~/course/data/get_data.sh"; fi
 else bad "Course reads missing" "bash ~/course/data/get_data.sh"; fi
 [ -s data/reads/samplesheet.csv ] && ok "Samplesheets written" || bad "Samplesheets missing" "bash ~/course/data/make_samplesheets.sh"
+if [ "$(wc -c < data/mash/refseq.genomes.k21s1000.msh 2>/dev/null || echo 0)" -eq 754115096 ]; then ok "Species database for Day 2 (Mash RefSeq sketch)"
+else warn "Species database for Day 2 missing or incomplete" "bash ~/course/data/get_data.sh mash"; fi
 
 if [ $DAY2 -eq 1 ]; then
   section "AWS (Day 2)"

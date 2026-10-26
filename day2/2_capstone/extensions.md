@@ -32,9 +32,9 @@ Bonus: publish it, and add it to MultiQC as a custom-content table (`*_mqc.tsv`)
 
 Question: would your flags have caught the isolates you failed by hand? Which threshold catches which?
 
-## E3. Use an nf-core module (★★, 20 min)
+## E3. A second nf-core module (★★, 20 min)
 
-If you didn't in S6: replace ABRICATE with `nf-core/abricate/run` (`nextflow module install nf-core/abricate/run`), configure it via `ext.args`, and compare the `software_versions.tsv` before and after.
+You added MASH_SCREEN this morning. Now replace your own ABRICATE with nf-core's: `nextflow module install nf-core/abricate/run`, connect it the same way, set its options with `ext.args` in `nextflow.config`, and compare `software_versions.tsv` before and after. Which ABRicate version are you running now?
 
 ## E4. Right-size the resources (★★, 20 min)
 

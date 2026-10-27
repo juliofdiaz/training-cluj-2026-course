@@ -487,19 +487,21 @@ Finished early? Open `results/pipeline_info/timeline_*.html`: which task took lo
 
 **What we're doing:** adding a new analysis to your own pipeline, from a spec. Only the new step runs; all 8 assemblies are reused.
 
-**What the code does.** A process can be defined in its own file, a **module**: one recipe card per file. The workflow in `main.nf` then needs one line to bring it in and one to call it:
+**What the code does.** A process can be defined in its own file, a **module**: one recipe card per file. Until now FASTP and SHOVILL were written inside `main.nf`; MLST is the first process that lives in its own file. `main.nf` then needs one line to bring it in, one to call it, and two to keep its results:
 
 ```
 modules/mlst.nf
-    process MLST {                                                         ← one step, in its own file
+    process MLST {                                                         ← defined: one step, in its own file
         input:  tuple val(meta), path(fasta)                               ← one assembly, with its meta
         output: tuple val(meta), path("${meta.id}.mlst.tsv"), emit: tsv    ← its typing result, named by sample
         script: mlst --label ${meta.id} … ${fasta} > ${meta.id}.mlst.tsv
     }
 
 main.nf
-    include { MLST } from './modules/mlst'                                 ← bring the recipe card in
-    MLST(SHOVILL.out.contigs)                                              ← called: each assembly goes into MLST
+    include { MLST } from './modules/mlst'                                 ← just above workflow {: bring the recipe card in
+    main:    … MLST(SHOVILL.out.contigs)                                   ← called: each assembly goes into MLST
+    publish: … mlst = MLST.out.tsv                                         ← keep its results, named mlst
+    output { … mlst { path 'typing' } }                                    ← … in results/typing/
 ```
 
 **1. Write `modules/mlst.nf` from the spec.**
@@ -525,24 +527,33 @@ What goes in `modules/mlst.nf`. Easiest start: copy the whole FASTP process from
 
 **2. Add two lines to `main.nf`: the `include`, and `MLST(SHOVILL.out.contigs)`.**
 
-**Why:** The `include` makes the module available; the call feeds it SHOVILL's assemblies, so MLST types each one.
+**Why:** The `include` makes the module available to your workflow; the call feeds it SHOVILL's assemblies, so MLST types each one.
 
-`include { MLST } from './modules/mlst'` goes at the top, with the other `include` lines; `MLST(SHOVILL.out.contigs)` goes in the `main:` block, after SHOVILL.
+`include { MLST } from './modules/mlst'` goes just above `workflow {`, below the two processes: it is your pipeline's first `include`. (Put it above FASTP and SHOVILL instead, and Nextflow sees them as new: all 8 assemblies would run again.) `MLST(SHOVILL.out.contigs)` goes in the `main:` block, after the SHOVILL line.
 
-**3. Run all 8 samples with `-resume`.**
+**3. Keep its results: two lines, in `publish:` and `output {}`.**
+
+**Why:** As with SHOVILL's assemblies in section 3.2, a result is saved only if it is published and given a folder. Otherwise it stays hidden in `work/`.
+
+In the `publish:` block, add `mlst = MLST.out.tsv`. In the `output {}` block, add a folder for it, like `assemblies` above it: `mlst { path 'typing' }` (three lines).
+
+**4. Run all 8 samples with `-resume`.**
 
 **Why:** Only MLST is new, so FASTP and SHOVILL are reused and the new step takes about a minute.
 
 ```bash
 cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
+cat results/typing/*.mlst.tsv
 ```
 
-**Done when:** MLST shows `8 of 8`, and FASTP and SHOVILL show `cached: 8`.
+You should see MLST `8 of 8`, then one line per sample: its name, `saureus` and its sequence type (ST).
+
+**Done when:** MLST shows `8 of 8`, FASTP and SHOVILL show `cached: 8`, and `cat` prints one line per sample.
 
 **Answer:** how long did the new step take, compared with the assemblies?
 
-Stuck? Compare with `~/course/help/pipeline/modules/mlst.nf`.
+Stuck? Compare your module with `~/course/help/pipeline/modules/mlst.nf`. No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
 
 ### 4.3 Copy the full pipeline (15:50)
 

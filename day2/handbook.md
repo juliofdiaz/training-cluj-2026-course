@@ -156,7 +156,7 @@ Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs?
 
 | Where in `main.nf` | Add |
 |---|---|
-| At the top, with the other `include` lines | `include { MASH_SCREEN } from './modules/nf-core/mash/screen'` |
+| Below the last `include` line (the MULTIQC one) | `include { MASH_SCREEN } from './modules/nf-core/mash/screen'` |
 | In `main:`, after the `SHOVILL(...)` line | `MASH_SCREEN(FASTP.out.reads, channel.value([[id: 'refseq'], file(params.mash_db, checkIfExists: true)]))` |
 | In `publish:`, with the other lines | `species = MASH_SCREEN.out.screen` |
 | In `output { }`, like `mlst` | `species { path 'species' }` (three lines) |

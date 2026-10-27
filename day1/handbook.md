@@ -90,11 +90,11 @@ IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as in 1.
 docker inspect --format '{{index .RepoDigests 0}}' $IMG
 ```
 
-**Done when:** it prints a name ending in `@sha256:` and a long code.
+**Done when:** it prints the image name, then `@sha256:` and a long code.
 
 **Answer:** what is the difference between `fastp:latest`, `fastp:1.4.0--h43da1c4_0` and `fastp@sha256:…`? Which would you put in a paper?
 
-Finished early? See *Further reading* (§7): who owns the files a container writes, and building your own image.
+Finished early? Open `README.md` in `~/course/day1/1_containers/`: optional extras (who owns the files a container writes, building your own image).
 
 ---
 
@@ -127,42 +127,81 @@ nextflow run 01_hello.nf --greeting 'Salut' -resume    # 5. all 3 run again
 
 **What we're doing:** turning a samplesheet into one item per sample, `[meta, reads]`, the shape every step this afternoon (and every nf-core pipeline) uses.
 
+Open `02_channels.nf` in VS Code and read it: Steps A and B are written for you. You change it in two places, marked `TODO 1` and `TODO 2`, and run it after each change.
+
+**First, run it as it is.**
+
 ```bash
 cd ~/course/day1/2_nextflow_basics
-nextflow run 02_channels.nf --input ~/course/data/reads/samplesheet.csv
+nextflow run 02_channels.nf
 ```
 
-Open the file and do **TODOs 1 and 2**, running it again after each one:
-1. TODO 1: add a `group` to `meta`. Then, in the `reads.view` line, print `${meta}` instead of `${meta.id}`, so you can see the group.
-2. TODO 2: count the samples.
+You should see 8 `row:` lines (one per samplesheet row), then 8 lines like `SA01 -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`. The order changes from run to run: that's normal.
 
-**Done when:** each line shows `[id:SA01, group:ward_A]` (and so on), and the count says 8. TODOs 3 and 4 are optional. Solution: `solutions/02_channels_solution.nf`.
+**TODO 1: give each sample a group.** SA01–SA04 come from `ward_A`, the others from `ward_B`. In Step B, replace the line `def meta = [id: row.sample]` with these two lines:
+
+```groovy
+def n = row.sample.replace('SA', '') as Integer
+def meta = [id: row.sample, group: n <= 4 ? 'ward_A' : 'ward_B']
+```
+
+Then, in the `reads.view` line just below, change `${meta.id}` to `${meta}`, and run the same command again.
+You should see: `[id:SA01, group:ward_A] -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`, and so on for all 8.
+
+**TODO 2: count the samples.** On the empty line under `// TODO 2`, add:
+
+```groovy
+reads.count().view { n -> "Number of samples: ${n}" }
+```
+
+Run it again. You should see `Number of samples: 8`.
+
+**Done when:** each line shows its group, like `[id:SA01, group:ward_A]`, and the count says 8. Stuck? Compare with `solutions/02_channels_solution.nf`: read it, don't copy it.
 
 **Answer:** what is inside `meta` for SA03, and what is inside `reads`?
+
+**Finished early? (optional)**
+- **TODO 3:** gather all sample IDs into one list: `reads.map { meta, _files -> meta.id }.collect().view()`. How many items does that channel emit?
+- **TODO 4:** group the IDs by ward: `reads.map { meta, _files -> tuple(meta.group, meta.id) }.groupTuple().view()`.
 
 ### 2.3 A real tool in a container
 
 **What we're doing:** writing our first real process: fastp, in its container, on two samples, then on all eight.
 
+Open `03_first_process.nf` in VS Code and read it. The FASTP process runs fastp on one sample; Nextflow runs it once per sample.
+
+**First, run it as it is**, on the 2 test samples:
+
 ```bash
 cd ~/course/day1/2_nextflow_basics
-nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/samplesheet_test.csv
+nextflow run 03_first_process.nf -with-docker
 ```
 
-Do **TODOs 1 and 2** in the file and run it again:
-1. TODO 1: add the JSON report as a second output (`emit: json`), and change the last line to `FASTP.out.json.view()`.
-2. TODO 2: replace `--thread 2` with `--thread ${task.cpus}`.
+You should see 2 FASTP tasks (SA01 and SA02), then 2 lines listing each sample's trimmed reads.
 
-TODO 3 is running it on all 8 samples:
+**TODO 1: keep the JSON report.** fastp writes a report, `SA01.fastp.json`, but Nextflow only keeps the files listed under `output:`. Under `// TODO 1`, in the `output:` block, add:
+
+```groovy
+tuple val(meta), path("${meta.id}.fastp.json"), emit: json
+```
+
+Then change the last line of the file to `FASTP.out.json.view()`, and run the same command again.
+You should see 2 lines, each with a path ending in `SA01.fastp.json` or `SA02.fastp.json`.
+
+**TODO 2: use the CPUs Nextflow gives the task.** In the `script:` block, replace `--thread 2` with `--thread ${task.cpus}`. Run it again: the same 2 lines.
+
+**TODO 3: all 8 samples.** The same pipeline, a different samplesheet:
 
 ```bash
 cd ~/course/day1/2_nextflow_basics
 nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/samplesheet.csv
 ```
 
-**Done when:** the last lines print 8 paths ending in `.fastp.json`. TODO 4 is optional. Solution: `solutions/03_first_process_solution.nf`.
+**Done when:** the last lines print 8 paths ending in `.fastp.json`, one per sample. Stuck? Compare with `solutions/03_first_process_solution.nf`.
 
 **Answer:** with 8 samples, how many fastp tasks ran at the same time on your machine? Why that number?
+
+**Finished early? (optional)** TODO 4: run the TODO 3 command again with `-resume` at the end. What changes, and why? Then the optional extra in `README.md`, in the same folder: settings moved into a config file.
 
 ---
 
@@ -378,10 +417,10 @@ We left these out of class time on purpose: they are useful, but not needed to b
 
 | Topic | Where to see it in the course files | Official documentation |
 |---|---|---|
-| Who owns the files a container writes (`-u`) | `day1/1_containers/README.md`, exercise 2.1 | <https://docs.docker.com/engine/containers/run/> |
-| Building your own container image | `day1/1_containers/Dockerfile` and its README | <https://docs.docker.com/build/> |
-| More channel operators: `collect`, `join`, `groupTuple` | `day1/2_nextflow_basics/02_channels.nf`, TODOs 3–4; `help/pipeline/main.nf` | <https://www.nextflow.io/docs/latest/reference/operator.html> |
-| Moving settings into a config file | `day1/2_nextflow_basics/04_config.nf` | <https://www.nextflow.io/docs/latest/config.html> |
+| Who owns the files a container writes (`-u`) | `day1/1_containers/README.md`, extra A | <https://docs.docker.com/engine/containers/run/> |
+| Building your own container image | `day1/1_containers/README.md`, extra C, and the `Dockerfile` | <https://docs.docker.com/build/> |
+| More channel operators: `collect`, `join`, `groupTuple` | handbook §2.2, TODOs 3–4; `help/pipeline/main.nf` | <https://www.nextflow.io/docs/latest/reference/operator.html> |
+| Moving settings into a config file | `day1/2_nextflow_basics/README.md`, the optional extra | <https://www.nextflow.io/docs/latest/config.html> |
 | Labels, resource limits and retries | `help/pipeline/conf/base.config` | <https://www.nextflow.io/docs/latest/reference/process.html> |
 | Where results are saved (`publish:` and `output {}`) | `help/pipeline/main.nf`, end of the file | <https://www.nextflow.io/docs/latest/workflow.html> |
 | Recording tool versions automatically (`eval`, `topic`) | any file in `help/pipeline/modules/`, and `software_versions.tsv` | <https://www.nextflow.io/docs/latest/reference/channel.html> |

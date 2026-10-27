@@ -42,11 +42,21 @@ Afterwards, on <https://nf-co.re/bacass/2.6.1>, **answer**:
 
 **What we're doing:** setting up a community pipeline for our 8 isolates, and checking the setup without running anything. (Running it would take over half an hour: checking it is the skill.)
 
+**1. Make bacass's samplesheet** from ours. bacass wants tabs and six columns:
+
 ```bash
 cd ~/course/day2/1_nfcore
 awk -F, 'NR==1 {print "ID\tR1\tR2\tLongFastQ\tFast5\tGenomeSize"; next}
          {print $1"\t"$2"\t"$3"\tNA\tNA\t2.8m"}' ~/course/data/reads/samplesheet.csv > bacass_samplesheet.tsv
+head -3 bacass_samplesheet.tsv
+```
 
+You should see a header line, then one line per isolate starting with `SA01`.
+
+**2. Write the settings file**, `params.yaml`. Copy the whole block: it writes the file for you.
+
+```bash
+cd ~/course/day2/1_nfcore
 cat > params.yaml <<'EOF'
 input:           bacass_samplesheet.tsv
 outdir:          results_bacass
@@ -57,11 +67,18 @@ skip_busco:      true
 skip_kmerfinder: true
 skip_kraken2:    true
 EOF
+```
 
+**3. Check it without running it.** `-preview` checks everything and runs nothing:
+
+```bash
+cd ~/course/day2/1_nfcore
 nextflow run nf-core/bacass -r 2.6.1 -profile docker -params-file params.yaml -preview
 ```
 
-`-preview` checks everything and runs nothing. **Done when:** `-preview` finishes without an error. Now break it on purpose: in `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`, run the preview again, read the error, and put it back.
+**Done when:** `-preview` finishes without an error.
+
+**4. Break it on purpose.** In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run step 3's command again and read the error: it names the setting and the values it accepts. Then put `short` back.
 
 **Answer:** what is the difference between a setting in `params.yaml` and a setting in a `-c` config file? Which one does `assembler: unicycler` belong in?
 
@@ -169,12 +186,16 @@ aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|region'
-# "Unknown configuration profile: 'awsbatch'"? Your conf/awsbatch.config is missing.
-# Copy the course config files (this replaces your nextflow.config, species check included):
-# cp -r ~/course/help/checkpoints/step4/{nextflow.config,conf} .
 ```
 
 **Done when:** the output shows `executor = 'awsbatch'` and a `workDir` ending in your course ID.
+
+Stuck? `Unknown configuration profile: 'awsbatch'` means your `conf/awsbatch.config` is missing. Copy the course's config files (this replaces your `nextflow.config`, species check included), then run the `nextflow config` line again:
+
+```bash
+cd ~/course/day1/3_bactflow
+cp -r ~/course/help/checkpoints/step4/{nextflow.config,conf} .
+```
 
 **Answer:** which files in your pipeline did you have to change to run in the cloud?
 
@@ -280,23 +301,18 @@ Why was the cloud run not 20 times faster, or 2.5 times slower?
 
 ## 7. Capstone: the ward cluster (S8, 14:00–16:25)
 
-Work **alone**, on your own results. Everything is in `~/course/day2/2_capstone/`: read `brief.md`, then fill in **`report.md`** in the same folder.
+**What we're doing:** deciding, alone and with evidence, which of your 8 isolates can be trusted, and writing it down so others can repeat it.
+
+**Everything for the capstone is in one file: `brief.md`.** It has the scenario, what to fill in and where the evidence is, the timings, and hints. You write your answers in `report.md`, in the same folder.
 
 ```bash
 cd ~/course/day2/2_capstone
-ls results_aws/          # a shortcut to your cloud results in ~/course/day1/3_bactflow/results_aws/
+ls                       # brief.md, report.md, extensions.md, and results_aws (your cloud results)
 ```
 
-| Time | What |
-|---|---|
-| 14:05 | Section A: the QC triage table |
-| 15:00 | Coffee |
-| 15:15 | Section B: typing and AMR |
-| 15:30 | Section C: your reproducibility statement |
-| 15:45 | Stop. In the class spreadsheet (**<RESULTS_SHEET_URL>**), fill in **Verdict** (PASS, WARN or FAIL) and a one-line **Reason** in your 8 rows. Then prepare your one-minute verdict. |
-| 15:50 | One-minute verdicts, everyone, from your seat |
+Open `brief.md` in VS Code (right-click → *Open Preview*), and `report.md` next to it.
 
-All paths in the brief are inside `results_aws/` (the shortcut above). **No `results_aws/`** (your cloud run failed)? Use your laptop results in `~/course/day1/3_bactflow/results/`: they have SA01–SA08, species check included (§5.4). Hints are at the end of the brief, always there: try for 15 minutes first. The extension is optional: only if you finish A–C early.
+**Done when:** sections A to C of `report.md` are filled in, and at 15:45 your 8 rows in the class spreadsheet (**<RESULTS_SHEET_URL>**) have a **Verdict** and a **Reason**.
 
 ---
 

@@ -2,14 +2,7 @@
 /*
  * 03_first_process.nf — a real tool, in a real container, on real data
  *
- *   cd ~/course/day1/2_nextflow_basics
- *   nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/samplesheet_test.csv
- *
- * TODO 1: complete the output block so Nextflow captures the JSON report.
- *         Then change the last line to FASTP.out.json.view() to print the reports.
- * TODO 2: change --thread 2 to use the number of CPUs Nextflow gives the task.
- * TODO 3: run it on all 8 samples (--input ~/course/data/reads/samplesheet.csv). What changes in the console output?
- * TODO 4: run it again with -resume. What changes?
+ * Instructions: Day 1 handbook §2.3. Change only the lines marked TODO.
  */
 
 params.input = "${projectDir}/../../data/reads/samplesheet_test.csv"
@@ -24,8 +17,9 @@ process FASTP {
 
     output:
     tuple val(meta), path("${meta.id}_trimmed_R{1,2}.fastq.gz"), emit: reads
-    // TODO 1: add a second output, emitted as 'json', for ${meta.id}.fastp.json
+    // TODO 1: add the JSON report as a second output here (handbook §2.3)
 
+    // TODO 2: in the script below, replace --thread 2 (handbook §2.3)
     script:
     """
     fastp \\
@@ -42,5 +36,5 @@ workflow {
         .map { row -> tuple([id: row.sample], [file(row.fastq_1), file(row.fastq_2)]) }
 
     FASTP(reads)
-    FASTP.out.reads.view()
+    FASTP.out.reads.view()    // TODO 1: change this line to FASTP.out.json.view()
 }

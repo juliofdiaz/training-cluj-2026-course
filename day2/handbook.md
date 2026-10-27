@@ -111,6 +111,27 @@ nextflow module search mash            # nf-core's modules, from Nextflow's own 
 
 **What we're doing:** installing an nf-core module into the pipeline you built yesterday, connecting it, and running it. Only the new step runs; everything from yesterday is reused.
 
+**What the code does.** The module is a process like yours, defined by nf-core, installed instead of written. Your workflow calls it with two inputs, and your config gives it its options:
+
+```
+modules/nf-core/mash/screen/main.nf                                  ← installed by nextflow module install
+    process MASH_SCREEN {                                            ← defined by nf-core
+        input:  tuple val(meta),  path(query)                        ← your trimmed reads, with meta
+                tuple val(meta2), path(sequences_sketch)             ← the species database, with its own meta
+        output: tuple val(meta), path("*.screen"), emit: screen      ← one .screen file per sample
+        script: mash screen ${args} … ${sequences_sketch} ${query}   ← ${args} comes from your config
+    }
+
+main.nf
+    include { MASH_SCREEN } from './modules/nf-core/mash/screen'     ← bring it in
+    MASH_SCREEN(FASTP.out.reads,                                     ← called: your reads…
+        channel.value([[id: 'refseq'], file(params.mash_db)]))       ← …then the database, as [meta, file]
+
+nextflow.config
+    mash_db = "…/data/mash/refseq.genomes.k21s1000.msh"              ← where the database is
+    withName: 'MASH_SCREEN' { ext.args = '-w -i 0.9' }               ← the options, kept out of the module
+```
+
 **1. Install the module: `nextflow module install nf-core/mash/screen`.**
 
 **Why:** You get a tested, versioned step from the community instead of writing it yourself.

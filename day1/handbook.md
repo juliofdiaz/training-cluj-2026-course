@@ -122,6 +122,34 @@ The files are in `~/course/day1/2_nextflow_basics/`. Open them in VS Code from t
 
 **What we're doing:** running a tiny pipeline, looking inside the folder where each task runs, and seeing `-resume` skip work that is already done.
 
+**What the code does.** A Nextflow file has two kinds of blocks:
+- **Processes.** Each one is a step, *defined* once, like a recipe card. A process on its own runs nothing.
+- **The workflow.** The main body: the part that actually runs. It *calls* processes by name, like `SAY_HELLO(names)`, and decides which values go into them.
+
+```
+01_hello.nf
+├── process SAY_HELLO { … }             ← defined here: the recipe for one step
+└── workflow { … SAY_HELLO(names) … }   ← the main body: calls the process by name
+```
+
+Nextflow turns each value sent into a process into a **task**: 3 names, 3 tasks. Shortened, `01_hello.nf` says:
+
+```
+params.greeting = 'Hello'                                         ← a setting: change it with --greeting 'Salut'
+
+process SAY_HELLO {                                               ← defined: one step, written once (runs nothing yet)
+    input:  val name                                              ← what it needs: one name
+    output: path "${name}.txt"                                    ← what it hands on: one file
+    script: echo "${params.greeting}, ${name}! …" > ${name}.txt   ← the command, run once per name
+}
+
+workflow {                                                        ← the main body: what actually runs
+    names = channel.of('Cluj', 'Napoca', 'Transilvania')          ← a channel: 3 values in a queue
+    SAY_HELLO(names)                                              ← called: 3 values in, 3 tasks, each in its own folder
+    SAY_HELLO.out.view { … }                                      ← print what came out
+}
+```
+
 **1. Run `01_hello.nf`: three tasks run.**
 
 **Why:** The smallest pipeline already has the parts every pipeline has: a process, a channel of inputs, and one task per input.
@@ -184,6 +212,18 @@ nextflow run 01_hello.nf --greeting 'Salut' -resume
 
 The files change at every step (trimmed reads, then an assembly, then a typing result), but `meta` stays with them, so every step knows which sample it is working on: `${meta.id}` is how a step names its outputs, `SA01.fastp.json` for example.
 
+**What the code does.** Step A reads the samplesheet; Step B turns each row into `[meta, reads]`:
+
+```
+samplesheet.csv                                        ← sample,fastq_1,fastq_2  (one line per sample)
+   │  Step A: splitCsv(header: true)                   ← each line becomes a map, named by the header
+   ▼
+[sample:SA01, fastq_1:…/SA01_R1.fastq.gz, fastq_2:…]   ← the row: printed as 'row: …'
+   │  Step B: map { row -> … }                         ← the row becomes [meta, reads]
+   ▼
+[[id:SA01], [SA01_R1.fastq.gz, SA01_R2.fastq.gz]]      ← one item per sample: what every step takes
+```
+
 Open `02_channels.nf` in VS Code and read it: its Steps A and B are written for you. You change it in one place, marked `TODO 1`, and run it again.
 
 **1. Run `02_channels.nf` as it is.**
@@ -224,7 +264,28 @@ You should see: `[id:SA01, group:ward_A] -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]
 
 **What we're doing:** writing our first real process: fastp, in its container, on two samples, then on all eight.
 
-Open `03_first_process.nf` in VS Code and read it. The FASTP process runs fastp on one sample; Nextflow runs it once per sample.
+**What the code does.** The same two kinds of blocks as in section 2.1: the FASTP process is *defined* at the top and runs fastp on one sample, inside its container; the workflow at the bottom *calls* it with every sample. Shortened, `03_first_process.nf` says:
+
+```
+process FASTP {                                                    ← defined: one step, for one sample
+    tag "${meta.id}"                                               ← the label on screen: FASTP (SA01)
+    container 'quay.io/biocontainers/fastp:1.4.0…'                 ← the meal kit this step cooks with
+    cpus 2                                                         ← the CPUs each task asks for
+    input:  tuple val(meta), path(reads)                           ← one sample: its meta and its 2 read files
+    output: tuple val(meta), path("…_trimmed_R{1,2}.fastq.gz")     ← what it hands on, meta still attached
+    script: fastp --in1 … --out1 … --json SA01.fastp.json …        ← the command, as you would type it
+}
+
+workflow {                                                         ← the main body: what actually runs
+    reads = channel.fromPath(params.input).splitCsv(…).map { … }   ← section 2.2: one [meta, reads] per sample
+    FASTP(reads)                                                   ← called: one task per sample
+    FASTP.out.reads.view()                                         ← print what came out
+}
+```
+
+What goes in as SA01 comes out as SA01: `meta` travels through the process. A file the script writes but `output:` doesn't list stays behind in the work folder; that is TODO 1.
+
+Open `03_first_process.nf` in VS Code and read it.
 
 **1. Run `03_first_process.nf` as it is, on 2 samples.**
 
@@ -283,6 +344,25 @@ This afternoon you build **bactflow**: reads → fastp → Shovill (assembly) �
 
 **What we're doing:** starting from a pipeline that already works, and reading it until we can explain every part: where the samples come in, what FASTP takes and gives, and where the results go.
 
+**What the code does.** The same pattern again: the FASTP process is defined at the top, and the workflow calls it. The workflow now has three parts: what runs, which results to keep, and where they go. Shortened, `main.nf` says:
+
+```
+process FASTP { … }                                   ← the same kind of step as in section 2.3
+
+workflow {
+    main:                                             ← what runs:
+        ch_reads = channel.fromPath(params.input)…    ←   the samplesheet, one [meta, reads] per sample
+        FASTP(ch_reads)                               ←   calls FASTP: one task per sample
+    publish:                                          ← which results to keep:
+        fastp = FASTP.out.json.join(FASTP.out.html)   ←   each sample's two reports, under the name fastp
+}
+output {                                              ← where kept results go, inside results/:
+    fastp { path 'qc/fastp' }                         ←   results/qc/fastp/
+}
+```
+
+`nextflow.config`, next to it, holds the settings (`params`) and the profiles, such as `-profile docker`.
+
 **1. Copy the working FASTP pipeline into your folder.**
 
 **Why:** You start from a pipeline that already works, so the afternoon is about understanding and extending it, not typing it.
@@ -317,6 +397,20 @@ You should see a report for SA01 and one for SA02. From now on, **always run fro
 ### 3.2 Connect SHOVILL yourself (14:00)
 
 **What we're doing:** adding the assembly step. The SHOVILL process is already written; you connect it to FASTP and tell Nextflow where to save the assemblies.
+
+**What the code does.** SHOVILL is already written. Your three lines connect it to FASTP and keep its result:
+
+```
+FASTP ──trimmed reads──▶ SHOVILL ──contigs──▶ results/assemblies/
+
+main:
+    FASTP(ch_reads)
+    SHOVILL(FASTP.out.reads)                                        ← TODO 1: call SHOVILL with FASTP's output
+publish:
+    assemblies = SHOVILL.out.contigs                                ← TODO 2: keep the contigs, named assemblies
+output {
+    assemblies { path 'assemblies' }                                ← TODO 3: … in results/assemblies/
+```
 
 **1. Copy the SHOVILL starting point into your folder.**
 
@@ -393,6 +487,21 @@ Finished early? Open `results/pipeline_info/timeline_*.html`: which task took lo
 
 **What we're doing:** adding a new analysis to your own pipeline, from a spec. Only the new step runs; all 8 assemblies are reused.
 
+**What the code does.** A process can be defined in its own file, a **module**: one recipe card per file. The workflow in `main.nf` then needs one line to bring it in and one to call it:
+
+```
+modules/mlst.nf
+    process MLST {                                                         ← one step, in its own file
+        input:  tuple val(meta), path(fasta)                               ← one assembly, with its meta
+        output: tuple val(meta), path("${meta.id}.mlst.tsv"), emit: tsv    ← its typing result, named by sample
+        script: mlst --label ${meta.id} … ${fasta} > ${meta.id}.mlst.tsv
+    }
+
+main.nf
+    include { MLST } from './modules/mlst'                                 ← bring the recipe card in
+    MLST(SHOVILL.out.contigs)                                              ← called: each assembly goes into MLST
+```
+
 **1. Write `modules/mlst.nf` from the spec.**
 
 **Why:** One step per file (a *module*) keeps `main.nf` short, and a module can be reused in other pipelines. nf-core is built entirely this way.
@@ -438,6 +547,16 @@ Stuck? Compare with `~/course/help/pipeline/modules/mlst.nf`.
 ### 4.3 Copy the full pipeline (15:50)
 
 **What we're doing:** getting the finished bactflow (assembly QC, resistance genes, one QC report, tool versions) without typing it. Tomorrow you add one tested step from nf-core to these files, then run them on 20 isolates in the cloud.
+
+**What the code does.** The full bactflow: one process per step, each in its own module, and one workflow that calls them in order. MLST and ABRICATE run once per sample; QUAST and MultiQC wait for all samples and run once:
+
+```
+reads ─▶ FASTP ─▶ SHOVILL ─┬─▶ MLST ─────▶ results/typing/mlst_summary.tsv   ← per sample
+           │               ├─▶ ABRICATE ─▶ results/amr/amr_summary.tsv       ← per sample (resistance genes)
+           │               └─▶ QUAST ────┐                                   ← all samples at once (assembly QC)
+           └─ fastp reports ─────────────┴─▶ MULTIQC ─▶ results/multiqc/     ← one QC report
+every step ─▶ results/pipeline_info/software_versions.tsv                    ← each tool records its own version
+```
 
 **1. Copy the full pipeline into your folder.**
 

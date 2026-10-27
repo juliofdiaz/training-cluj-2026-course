@@ -344,6 +344,12 @@ This afternoon you build **bactflow**: reads → fastp → Shovill (assembly) �
 
 **What we're doing:** starting from a pipeline that already works, and reading it until we can explain every part: where the samples come in, what FASTP takes and gives, and where the results go.
 
+**What we've built so far.**
+
+```
+reads ─▶ FASTP   ← new: trimming and read QC, per sample
+```
+
 **What the code does.** The same pattern again: the FASTP process is defined at the top, and the workflow calls it. The workflow now has three parts: what runs, which results to keep, and where they go. Shortened, `main.nf` says:
 
 ```
@@ -397,6 +403,12 @@ You should see a report for SA01 and one for SA02. From now on, **always run fro
 ### 3.2 Connect SHOVILL yourself (14:00)
 
 **What we're doing:** adding the assembly step. The SHOVILL process is already written; you connect it to FASTP and tell Nextflow where to save the assemblies.
+
+**What we've built so far.**
+
+```
+reads ─▶ FASTP ─▶ SHOVILL   ← new: assembly, per sample
+```
 
 **What the code does.** SHOVILL is already written. Your three lines connect it to FASTP and keep its result:
 
@@ -487,6 +499,12 @@ Finished early? Open `results/pipeline_info/timeline_*.html`: which task took lo
 
 **What we're doing:** adding a new analysis to your own pipeline, from a spec. Only the new step runs; all 8 assemblies are reused.
 
+**What we've built so far.**
+
+```
+reads ─▶ FASTP ─▶ SHOVILL ─▶ MLST   ← new: typing, in its own module
+```
+
 **What the code does.** A process can be defined in its own file, a **module**: one recipe card per file. Until now FASTP and SHOVILL were written inside `main.nf`; MLST is the first process that lives in its own file. `main.nf` then needs one line to bring it in, one to call it, and two to keep its results:
 
 ```
@@ -555,30 +573,65 @@ You should see MLST `8 of 8`, then one line per sample: its name, `saureus` and 
 
 Stuck? Compare your module with `~/course/help/pipeline/modules/mlst.nf`. No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
 
-### 4.3 Copy the full pipeline (15:50)
+### 4.3 Collect all 8 reports into one: wire MultiQC (15:50)
 
-**What we're doing:** getting the finished bactflow (assembly QC, resistance genes, one QC report, tool versions) without typing it. Tomorrow you add one tested step from nf-core to these files, then run them on 20 isolates in the cloud.
+**What we're doing:** adding a step that waits for all 8 samples and runs once: 8 fastp reports in, one QC report out.
 
-**What the code does.** The full bactflow: one process per step, each in its own module, and one workflow that calls them in order. MLST and ABRICATE run once per sample; QUAST and MultiQC wait for all samples and run once:
+**What we've built so far.**
 
 ```
-reads ─▶ FASTP ─▶ SHOVILL ─┬─▶ MLST ─────▶ results/typing/mlst_summary.tsv   ← per sample
-           │               ├─▶ ABRICATE ─▶ results/amr/amr_summary.tsv       ← per sample (resistance genes)
-           │               └─▶ QUAST ────┐                                   ← all samples at once (assembly QC)
-           └─ fastp reports ─────────────┴─▶ MULTIQC ─▶ results/multiqc/     ← one QC report
-every step ─▶ results/pipeline_info/software_versions.tsv                    ← each tool records its own version
+reads ─▶ FASTP ─▶ SHOVILL ─▶ MLST                 ← per sample: 8 tasks each
+           └─ 8 reports ─▶ .collect() ─▶ MULTIQC  ← new: all samples at once, 1 task
 ```
 
-**1. Copy the full pipeline into your folder.**
+**What the code does.** Every step so far ran once per sample: 8 items in, 8 tasks. `.collect()` is the other kind of step: it waits until all 8 items have arrived and hands them on as **one** list, so the next step runs once, on everything.
 
-**Why:** The remaining steps follow the pattern you just used. Copying them saves typing, and gives you the exact files you extend and run in the cloud tomorrow.
+```
+SA01 SA02 … SA08 ──MLST(SHOVILL.out.contigs)──▶ 8 tasks              ← one per sample
+SA01 SA02 … SA08 ──.collect()──▶ [SA01 … SA08] ──MULTIQC──▶ 1 task   ← one for all of them
+
+FASTP.out.json                                                       ← 8 items: [meta, SA01.fastp.json], …
+    .map { _meta, json -> json }                                     ← keep only the file: MultiQC needs the reports, not meta
+    .collect()                                                       ← wait for all 8, then hand them on as one list
+```
+
+**1. Copy the MultiQC module and its settings file.**
+
+**Why:** Like MLST, the step lives in its own file. It also needs a small settings file that says which columns the report shows.
 
 ```bash
 cd ~/course/day1/3_bactflow
-cp -r ~/course/help/pipeline/{main.nf,modules,assets,conf,nextflow.config} .
+cp ~/course/help/pipeline/modules/multiqc.nf modules/
+cp -r ~/course/help/pipeline/assets .
 ```
 
-**2. Run all 8 samples with `-resume`.**
+**2. Add the `include`, just above `workflow {`.**
+
+**Why:** As in section 4.2, it makes the module available to your workflow. Placed below the MLST `include`, nothing you already ran looks new.
+
+`include { MULTIQC } from './modules/multiqc'` goes on the line below `include { MLST } from './modules/mlst'`.
+
+**3. Call it with all 8 reports at once: `.collect()`.**
+
+**Why:** MLST needs one assembly at a time; MultiQC needs every report together, to put the 8 samples side by side. `.collect()` turns 8 items into one, so MultiQC runs once.
+
+In the `main:` block, after the MLST line, add:
+
+```groovy
+MULTIQC(FASTP.out.json.map { _meta, json -> json }.collect(), file("${projectDir}/assets/multiqc_config.yml"))
+```
+
+The second input is the settings file you copied in step 1.
+
+**4. Keep its report: two lines, in `publish:` and `output {}`.**
+
+**Why:** As for SHOVILL and MLST: only published results reach `results/`.
+
+In `publish:`, add `multiqc = MULTIQC.out.report`. In `output {}`, add `multiqc { path 'multiqc' }` (three lines, like `mlst`).
+
+**5. Run all 8 samples with `-resume`.**
+
+**Why:** Only the new step runs, and it runs once.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -586,32 +639,50 @@ nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv
 ls results/multiqc/
 ```
 
-Only the new steps run (and MLST once more). You should see `multiqc_report.html`.
+You should see FASTP, SHOVILL and MLST `cached: 8`, MULTIQC `1 of 1`, then `multiqc_report.html`.
 
-**3. Look at the tool versions it recorded.**
+**Done when:** MULTIQC shows `1 of 1`, and `ls results/multiqc/` shows `multiqc_report.html`.
 
-**Why:** A pipeline that records its own tool versions gives a reviewer what they need to repeat your work.
+**Answer:** MLST ran 8 times and MULTIQC once. Which part of your code made the difference?
+
+Stuck? MULTIQC ran 8 times: the `.collect()` is missing. Anything else: section 4.4, step 1, copies the finished pipeline, MultiQC included.
+
+### 4.4 Finish the pipeline and look at the results (16:05)
+
+**What we're doing:** adding the last two steps, ready-made, then checking whether a pipeline that "finished without errors" gave results we can trust.
+
+**What we've built so far.**
+
+```
+reads ─▶ FASTP ─▶ SHOVILL ─┬─▶ MLST ─────▶ results/typing/mlst_summary.tsv   ← you wrote it
+           │               ├─▶ ABRICATE ─▶ results/amr/amr_summary.tsv       ← added for you: resistance genes
+           │               └─▶ QUAST ────┐                                   ← added for you: assembly QC
+           └─ 8 reports ─────────────────┴─▶ MULTIQC ─▶ results/multiqc/     ← you wrote it
+every step ─▶ results/pipeline_info/software_versions.tsv                    ← each tool records its own version
+```
+
+QUAST and ABRICATE are two more steps of the kinds you just wrote: ABRICATE runs once per sample, like MLST; QUAST runs once over all samples, with `.collect()`, like MultiQC.
+
+**1. Copy the finished pipeline and run it: QUAST and ABRICATE are added for you.**
+
+**Why:** They follow the two patterns you have just written, so copying them saves typing, not learning. Everyone then has identical files for tomorrow, when you add one nf-core step and run them in the cloud.
 
 ```bash
 cd ~/course/day1/3_bactflow
+cp -r ~/course/help/pipeline/{main.nf,modules,assets,conf,nextflow.config} .
+nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
 cat results/pipeline_info/software_versions.tsv
 ```
 
-You should see one line per tool, with its version. Nobody typed them: each step records its own.
+You should see FASTP and SHOVILL `cached: 8`; QUAST and ABRICATE run, and MLST and MULTIQC run once more (MultiQC now also reads QUAST's report). Then one line per tool with its version: nobody typed them, each step records its own.
 
-**Done when:** `ls results/multiqc/` shows `multiqc_report.html`.
-
-### 4.4 Look at the results (16:00)
-
-**What we're doing:** checking whether a pipeline that "finished without errors" gave results we can trust.
-
-**1. Open the MultiQC report.**
+**2. Open the MultiQC report.**
 
 **Why:** "Finished without errors" doesn't mean "right". The QC report is where you check each sample's quality.
 
 In `~/course/day1/3_bactflow`, open `results/multiqc/multiqc_report.html` (VS Code: right-click → *Open with Live Preview*, or download it).
 
-**2. Read the two summary tables.**
+**3. Read the two summary tables.**
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -619,13 +690,13 @@ cat results/typing/mlst_summary.tsv
 column -t results/amr/amr_summary.tsv
 ```
 
-**3. Write in `~/course/notes.md`: are all 8 results trustworthy? Don’t fix anything.**
+**4. Write in `~/course/notes.md`: are all 8 results trustworthy? Don’t fix anything.**
 
 **Why:** Deciding what to trust is the real job. Tomorrow's capstone tests your decision with more evidence.
 
 Note anything odd: tomorrow's capstone is about this.
 
-**Done when:** your answer is in `~/course/notes.md`.
+**Done when:** both tables print, and your answer is in `~/course/notes.md`.
 
 ---
 
@@ -699,7 +770,7 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | Where results are saved (`publish:` and `output {}`) | `help/pipeline/main.nf`, end of the file | <https://www.nextflow.io/docs/latest/workflow.html> |
 | Recording tool versions automatically (`eval`, `topic`) | any file in `help/pipeline/modules/`, and `software_versions.tsv` | <https://www.nextflow.io/docs/latest/reference/channel.html> |
 | Modules: one process per file, `include` | `help/pipeline/modules/` | <https://www.nextflow.io/docs/latest/module.html> |
-| Steps that use all samples at once (QUAST, MultiQC) | `help/pipeline/main.nf`: the lines with `.collect()` | <https://www.nextflow.io/docs/latest/channel.html> |
+| Steps that use all samples at once (QUAST, MultiQC) | section 4.3 (MultiQC); `help/pipeline/main.nf`, the QUAST line | <https://www.nextflow.io/docs/latest/channel.html> |
 | Run reports: timeline, trace, execution report | `results/pipeline_info/` after any run | <https://www.nextflow.io/docs/latest/reports.html> |
 | Testing a pipeline | capstone extension E5 (`day2/2_capstone/extensions.md`) | <https://www.nf-test.com> |
 | A full, free Nextflow course | – | <https://training.nextflow.io> (start with *Hello Nextflow*) |

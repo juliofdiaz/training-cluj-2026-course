@@ -111,6 +111,13 @@ nextflow module search mash            # nf-core's modules, from Nextflow's own 
 
 **What we're doing:** installing an nf-core module into the pipeline you built yesterday, connecting it, and running it. Only the new step runs; everything from yesterday is reused.
 
+**What we've built so far.**
+
+```
+reads ─▶ FASTP ─▶ SHOVILL ─▶ MLST, ABRICATE, QUAST ─▶ MULTIQC     ← yesterday
+           └─▶ MASH_SCREEN ─▶ results/species/                    ← new: nf-core's tested module
+```
+
 **What the code does.** The module is a process like yours, defined by nf-core, installed instead of written. Your workflow calls it with two inputs, and your config gives it its options:
 
 ```

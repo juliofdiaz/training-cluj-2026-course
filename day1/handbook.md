@@ -38,7 +38,7 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-Connect with the card you were given. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, type `<login>@<address>` (both are on your card) and the password. Or, in a terminal: `ssh <login>@<address>`. Then:
+Your machine's **address** is on the screen, next to your name; the **login details** are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`. Then:
 
 ```bash
 bash ~/course/tools/check_vm.sh

@@ -522,26 +522,49 @@ main.nf
     output { … mlst { path 'typing' } }                                    ← … in results/typing/
 ```
 
-**1. Write `modules/mlst.nf` from the spec.**
+**1. Fill in the MLST skeleton from the spec: `modules/mlst.nf`.**
 
 **Why:** One step per file (a *module*) keeps `main.nf` short, and a module can be reused in other pipelines. nf-core is built entirely this way.
 
-In your pipeline's folder, make a `modules` folder, then create the file `modules/mlst.nf` in it:
+Make a `modules` folder in your pipeline's folder, and open a new file in it:
 
 ```bash
 cd ~/course/day1/3_bactflow
 mkdir -p modules
+code modules/mlst.nf
 ```
 
-What goes in `modules/mlst.nf`. Easiest start: copy the whole FASTP process from `main.nf` into the new file, then change each part to the value in this table:
+Paste this skeleton into the new file. Its name, tag and label are already filled in:
 
-| Part | Value |
+```groovy
+process MLST {
+    tag "${meta.id}"
+    label 'process_single'
+    container '___'
+
+    input:
+    ___
+
+    output:
+    ___
+
+    script:
+    """
+    ___
+    """
+}
+```
+
+Then replace each `___` with its value from this table, and save:
+
+| Blank | Value |
 |---|---|
-| Process name, tag, label | `MLST`, `tag "${meta.id}"`, `label 'process_single'` |
-| Container | `quay.io/biocontainers/mlst:2.35.0--hdfd78af_1` |
-| Input | `tuple val(meta), path(fasta)` |
-| Output | `tuple val(meta), path("${meta.id}.mlst.tsv"), emit: tsv` |
-| Command | `mlst --label ${meta.id} --threads ${task.cpus} ${fasta} > ${meta.id}.mlst.tsv` |
+| `container` | `quay.io/biocontainers/mlst:2.35.0--hdfd78af_1` |
+| `input:` | `tuple val(meta), path(fasta)` |
+| `output:` | `tuple val(meta), path("${meta.id}.mlst.tsv"), emit: tsv` |
+| `script:` (between the `"""`) | `mlst --label ${meta.id} --threads ${task.cpus} ${fasta} > ${meta.id}.mlst.tsv` |
+
+The name in `input:` is the name the command uses: `path(fasta)` is what makes `${fasta}` work.
 
 **2. Add two lines to `main.nf`: the `include`, and `MLST(SHOVILL.out.contigs)`.**
 
@@ -571,7 +594,7 @@ You should see MLST `8 of 8`, then one line per sample: its name, `saureus` and 
 
 **Answer:** how long did the new step take, compared with the assemblies?
 
-Stuck? Compare your module with `~/course/help/pipeline/modules/mlst.nf`. No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
+Stuck? `fasta` is not defined: the `input:` line must say `path(fasta)`. Otherwise compare your module with `~/course/help/pipeline/modules/mlst.nf` (it has one extra output line, which records MLST's version). No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
 
 ### 4.3 Collect all 8 reports into one: wire MultiQC (15:50)
 

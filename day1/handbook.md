@@ -155,7 +155,7 @@ nextflow run 01_hello.nf --greeting 'Salut' -resume
 
 **What we're doing:** turning a samplesheet into one item per sample, `[meta, reads]`, the shape every step this afternoon (and every nf-core pipeline) uses.
 
-Open `02_channels.nf` in VS Code and read it: its Steps A and B are written for you. You change it in two places, marked `TODO 1` and `TODO 2`, and run it after each change.
+Open `02_channels.nf` in VS Code and read it: its Steps A and B are written for you. You change it in one place, marked `TODO 1`, and run it again.
 
 **1. Run `02_channels.nf` as it is.**
 
@@ -176,19 +176,12 @@ def meta = [id: row.sample, group: n <= 4 ? 'ward_A' : 'ward_B']
 Then, in the `reads.view` line just below, change `${meta.id}` to `${meta}`, and run the same command again.
 You should see: `[id:SA01, group:ward_A] -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`, and so on for all 8.
 
-**3. TODO 2: count the samples, run it again.** On the empty line under `// TODO 2`, add:
-
-```groovy
-reads.count().view { n -> "Number of samples: ${n}" }
-```
-
-Run it again. You should see `Number of samples: 8`.
-
-**Done when:** each line shows its group, like `[id:SA01, group:ward_A]`, and the count says 8. Stuck? Compare with `solutions/02_channels_solution.nf`: read it, don't copy it.
+**Done when:** each line shows its group, like `[id:SA01, group:ward_A]`. Stuck? Compare with `solutions/02_channels_solution.nf`: read it, don't copy it.
 
 **Answer:** what is inside `meta` for SA03, and what is inside `reads`?
 
-**Finished early? (optional)**
+**Finished early? (optional)** Add each line on the empty lines under `// TODO 2, 3 and 4`, and run it again after each:
+- **TODO 2:** count the samples: `reads.count().view { n -> "Number of samples: ${n}" }`. You should see `Number of samples: 8`.
 - **TODO 3:** gather all sample IDs into one list: `reads.map { meta, _files -> meta.id }.collect().view()`. How many items does that channel emit?
 - **TODO 4:** group the IDs by ward: `reads.map { meta, _files -> tuple(meta.group, meta.id) }.groupTuple().view()`.
 

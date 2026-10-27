@@ -22,9 +22,6 @@ workflow {
     // TODO 1: then print ${meta} instead of ${meta.id} here
     reads.view { meta, files -> "${meta.id} -> ${files*.name}" }
 
-    // TODO 2: count the samples (handbook section 2.2)
-
-
-    // TODO 3 and TODO 4 (optional): below this line
+    // TODO 2, 3 and 4 (optional, handbook section 2.2): below this line
 
 }

@@ -14,13 +14,13 @@ workflow {
 
     reads.view { meta, files -> "${meta} -> ${files*.name}" }
 
-    // TODO 2
+    // TODO 2 (optional)
     reads.count().view { n -> "Number of samples: ${n}" }
 
-    // TODO 3: one emission, containing a list
+    // TODO 3 (optional): one emission, containing a list
     reads.map { meta, _files -> meta.id }.collect().view { ids -> "All IDs: ${ids}" }
 
-    // TODO 4
+    // TODO 4 (optional)
     reads.map { meta, _files -> tuple(meta.group, meta.id) }
         .groupTuple()
         .view { group, ids -> "${group}: ${ids}" }

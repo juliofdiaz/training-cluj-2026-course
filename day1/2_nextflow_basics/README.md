@@ -5,7 +5,7 @@
 | File | Handbook | What you practise |
 |---|---|---|
 | `01_hello.nf` | Section 2.1 (11:15) | Running a pipeline, the `work/` folder, params, `-resume` |
-| `02_channels.nf` | Section 2.2 (11:35) | A samplesheet → `[meta, [R1, R2]]`, `map`, `count` |
+| `02_channels.nf` | Section 2.2 (11:35) | A samplesheet → `[meta, [R1, R2]]`, `map`, the `meta` map |
 | `03_first_process.nf` | Section 2.3 (11:55) | A real tool (fastp) in a container, declaring outputs, `task.cpus` |
 | `04_config.nf` + `04.config` | optional, below | Moving settings into a config file, profiles |
 | `solutions/` | | The finished 02 and 03: read them when stuck, don't copy them |

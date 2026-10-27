@@ -9,6 +9,7 @@ Welcome! Everything for the two days is in this folder, `~/course`, on your own 
   - Day 2: `day2/handbook.md`
 
   Every command you type is in the handbook, in order. To see it nicely formatted, right-click the file → *Open Preview*.
+- **Each amber “Your turn” slide matches one handbook section.** Its footer names the section (for example *handbook section 2.2*), and its numbered steps are the handbook's bold steps, in the same words.
 - **Open a terminal:** *Terminal → New Terminal*. Each step in the handbook starts with a `cd` line: run it first, so you are in the right folder.
 - **Write your answers** in `notes.md` (in this folder). One file for both days.
 - **Stuck?** Read the "Stuck?" box on the slide, then the troubleshooting table at the end of the handbook. Still stuck after 3 minutes? Raise your hand.
@@ -22,7 +23,8 @@ Welcome! Everything for the two days is in this folder, `~/course`, on your own 
 | `day1/3_bactflow/` | **Your own pipeline.** You build it here on Day 1; on Day 2 you add an nf-core module to it and run it in the cloud. | Day 1 afternoon, Day 2 |
 | `day2/1_nfcore/` | Checking a community pipeline, nf-core/bacass | Day 2, 09:30 |
 | `day2/2_capstone/` | The capstone: `brief.md`, and `report.md`, which you fill in | Day 2, 14:00 |
-| `data/` | The course reads and samplesheets. Read them, don't change them. | Both days |
+| `data/reads/` | The course reads and samplesheets. Read them, don't change them. | Both days |
+| `data/mash/` | The species database for Day 2's species check | Day 2 |
 | `help/` | If you fall behind: `checkpoints/` (each step, finished) and `pipeline/` (the whole finished pipeline) | When you need it |
 | `tools/` | `check_vm.sh` (is my machine ready?) and `sheet_rows.sh` (results for the class spreadsheet) | When the handbook says |
 
@@ -32,4 +34,4 @@ Welcome! Everything for the two days is in this folder, `~/course`, on your own 
 bash ~/course/tools/check_vm.sh
 ```
 
-Every line should say `OK`.
+The last line should say `Ready.` (`WARN` lines are fine). A `FAIL` line prints its fix.

@@ -110,7 +110,7 @@ if [ $DAY2 -eq 1 ]; then
     if [ -n "${COURSE_BUCKET:-}" ]; then
       aws s3 ls "$COURSE_BUCKET/data/" >/dev/null 2>&1 && ok "Can read $COURSE_BUCKET/data/" || bad "Cannot read $COURSE_BUCKET/data/" "check COURSE_BUCKET and your permissions"
     else warn "COURSE_BUCKET not set" "export COURSE_BUCKET=s3://<course-bucket>  (on the board)"; fi
-    Q=${COURSE_QUEUE:-course-spot-queue}
+    Q=${COURSE_QUEUE:-workshop-cluj-2026-queue}
     S=$(aws batch describe-job-queues --job-queues "$Q" --query 'jobQueues[0].state' --output text 2>/dev/null)
     [ "$S" = "ENABLED" ] && ok "Batch queue $Q is ENABLED" || bad "Batch queue $Q not found or not ENABLED (got: ${S:-nothing})" "export COURSE_QUEUE=<queue-name> or tell an instructor"
   else bad "AWS CLI not found" "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"; fi

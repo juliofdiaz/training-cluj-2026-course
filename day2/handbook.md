@@ -42,7 +42,11 @@ Afterwards, on <https://nf-co.re/bacass/2.6.1>, **answer**:
 
 **What we're doing:** setting up a community pipeline for our 8 isolates, and checking the setup without running anything. (Running it would take over half an hour: checking it is the skill.)
 
-**1. Make bacass’s samplesheet from ours.** bacass wants tabs and six columns:
+**1. Make bacass’s samplesheet from ours.**
+
+**Why:** Every pipeline wants its samplesheet in its own format: converting yours is the first job of using one.
+
+bacass wants tabs and six columns:
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -53,7 +57,11 @@ head -3 bacass_samplesheet.tsv
 
 You should see a header line, then one line per isolate starting with `SA01`.
 
-**2. Write the settings file, `params.yaml`.** Copy the whole block: it writes the file for you.
+**2. Write the settings file, `params.yaml`.**
+
+**Why:** One file records every setting of the run, so you can keep it, share it and run the same thing again, instead of a long command line.
+
+Copy the whole block: it writes the file for you.
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -69,7 +77,11 @@ skip_kraken2:    true
 EOF
 ```
 
-**3. Check it with `-preview`: it runs nothing.** It checks the samplesheet, the settings and the containers:
+**3. Check it with `-preview`: it runs nothing.**
+
+**Why:** You find a mistake in seconds, instead of half an hour into a run.
+
+It checks the samplesheet, the settings and the containers:
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -78,7 +90,11 @@ nextflow run nf-core/bacass -r 2.6.1 -profile docker -params-file params.yaml -p
 
 **Done when:** `-preview` finishes without an error.
 
-**4. Break it on purpose (`shortt`), read the error, fix it.** In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run step 3's command again and read the error: it names the setting and the values it accepts. Then put `short` back.
+**4. Break it on purpose (`shortt`), read the error, fix it.**
+
+**Why:** nf-core pipelines check their settings before running. Reading one such error now makes the next one easy to fix.
+
+In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run step 3's command again and read the error: it names the setting and the values it accepts. Then put `short` back.
 
 **Answer:** what is the difference between a setting in `params.yaml` and a setting in a `-c` config file? Which one does `assembler: unicycler` belong in?
 
@@ -95,7 +111,11 @@ nextflow module search mash            # nf-core's modules, from Nextflow's own 
 
 **What we're doing:** installing an nf-core module into the pipeline you built yesterday, connecting it, and running it. Only the new step runs; everything from yesterday is reused.
 
-**1. Install the module: `nextflow module install nf-core/mash/screen`.** One command; it adds the folder `modules/nf-core/mash/screen/` and changes nothing else.
+**1. Install the module: `nextflow module install nf-core/mash/screen`.**
+
+**Why:** You get a tested, versioned step from the community instead of writing it yourself.
+
+One command; it adds the folder `modules/nf-core/mash/screen/` and changes nothing else.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -103,9 +123,15 @@ nextflow module install nf-core/mash/screen
 ls modules/nf-core/mash/screen/
 ```
 
-**2. Read it: its inputs, its output, `task.ext.args`.** Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs? What does it output? Where do Mash's own options come from? (Hint: `task.ext.args`.)
+**2. Read it: its inputs, its output, `task.ext.args`.**
+
+**Why:** Before using someone else's code, know what it takes, what it gives, and where its options come from.
+
+Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs? What does it output? Where do Mash's own options come from? (Hint: `task.ext.args`.)
 
 **3. Connect it: four places in `main.nf`.**
+
+**Why:** The module does nothing until your pipeline calls it and keeps what it outputs: the same wiring you did for SHOVILL yesterday.
 
 | Where in `main.nf` | Add |
 |---|---|
@@ -118,6 +144,8 @@ The first input is your trimmed reads, `[meta, reads]`: the same shape you built
 
 **4. Configure it: two lines in `nextflow.config`.**
 
+**Why:** nf-core modules never hard-code a database or options. Your config supplies them, which is what keeps the module reusable in any pipeline.
+
 | Where in `nextflow.config` | Add |
 |---|---|
 | In `params { }` | `mash_db = "${projectDir}/../../data/mash/refseq.genomes.k21s1000.msh"` |
@@ -126,6 +154,8 @@ The first input is your trimmed reads, `[meta, reads]`: the same shape you built
 `-w` keeps one best genome per group of near-identical genomes; `-i 0.9` hides weak matches. The module never hard-codes these: your config supplies them. Every nf-core module works this way.
 
 **5. Run it on your 8 isolates with `-resume`, then print the species lines.**
+
+**Why:** Only the new step runs. Its results show whether each isolate really is the species it should be.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -169,6 +199,8 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 
 **1. Look at your four saved settings: `cat ~/.course_env`.**
 
+**Why:** These four settings say who you are, and which bucket and queue your run uses. The pipeline reads them, so no names are written in your code.
+
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 cat ~/.course_env
@@ -178,6 +210,8 @@ You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. 
 
 **2. Run the Day 2 check: `bash ~/course/tools/check_vm.sh --day2`.**
 
+**Why:** A missing permission or setting shows up now, not halfway through the cloud run.
+
 ```bash
 bash ~/course/tools/check_vm.sh --day2
 ```
@@ -186,6 +220,8 @@ You should see `Ready.` on the last line.
 
 **3. Ask AWS who you are: `aws sts get-caller-identity`.**
 
+**Why:** It confirms your machine may use the course's AWS account, with no password or key on it.
+
 ```bash
 aws sts get-caller-identity
 ```
@@ -193,6 +229,8 @@ aws sts get-caller-identity
 You should see an `Arn` line naming the course machines' role.
 
 **4. List the course reads in the bucket.**
+
+**Why:** The cloud run reads its data from the bucket, not from your machine.
 
 ```bash
 aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
@@ -208,6 +246,8 @@ aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 
 **1. Check the cloud settings: the `nextflow config` line.**
 
+**Why:** One profile decides where the tasks run. Checking it first shows that nothing in your code changes.
+
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|region'
@@ -222,9 +262,17 @@ cd ~/course/day1/3_bactflow
 cp -r ~/course/help/checkpoints/step4/{nextflow.config,conf} .
 ```
 
-**2. Write down your prediction: 20 isolates in the cloud, longer than 8 on your laptop?** Yesterday your machine needed how many minutes for 8 isolates (your answer from Day 1 section 3.3)? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
+**2. Write down your prediction: 20 isolates in the cloud, longer than 8 on your laptop?**
 
-**3. Create `run_aws.sh` and run it. Leave this terminal running.** Copy the whole block: it writes the script, then runs it.
+**Why:** Predicting makes you think about what the cloud adds: many machines at once, but each one has to start first.
+
+Yesterday your machine needed how many minutes for 8 isolates (your answer from Day 1 section 3.3)? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
+
+**3. Create `run_aws.sh` and run it. Leave this terminal running.**
+
+**Why:** The script runs the same pipeline with `-profile awsbatch` on 20 isolates. Kept in a file, the exact command can be run again; with `-resume`, a rerun only does what is unfinished.
+
+Copy the whole block: it writes the script, then runs it.
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
@@ -240,7 +288,11 @@ bash run_aws.sh
 
 You should see `executor > awsbatch`, then a FASTP line counting `of 20`. This terminal is your run: if you need a terminal, open a new one (VS Code: *Terminal → New Terminal*).
 
-**4. Watch the instructor’s screen: jobs, then machines, appear.** The jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appear in EC2 by themselves. **Answer:** why do the first jobs wait in `RUNNABLE`?
+**4. Watch the instructor’s screen: jobs, then machines, appear.**
+
+**Why:** Seeing jobs wait while machines start explains the slow start of every cloud run.
+
+The jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appear in EC2 by themselves. **Answer:** why do the first jobs wait in `RUNNABLE`?
 
 **Done when:** your terminal shows `awsbatch` and a FASTP line counting `of 20`. You don't need to wait for the end.
 
@@ -254,6 +306,8 @@ If the run stops or fails, fix the cause and run `bash run_aws.sh` again from th
 
 **2. Look at your work folders in S3, and at your run.**
 
+**Why:** The work folders you opened yesterday now live in S3: same idea, different place.
+
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head        # one folder per task, now in S3
@@ -261,6 +315,8 @@ nextflow log | tail -1                                      # your run: STATUS i
 ```
 
 **3. Count the `.screen` files in your cloud `species/` folder: 20 when the run is done.**
+
+**Why:** Each finished isolate adds one file: a progress check that doesn't disturb the run.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -278,6 +334,8 @@ aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/
 **What we're doing:** checking that your cloud run finished, and restarting it if it didn't.
 
 **1. Check your last run and count your species files.**
+
+**Why:** A run can stop when your laptop sleeps over lunch. This tells you whether to wait or to restart it.
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
@@ -312,6 +370,8 @@ Still failing at 13:40? Go on to section 6.6 with what you have, and raise your 
 
 **1. Download your cloud results and compare them with your laptop’s.**
 
+**Why:** The same tool versions, and the same answers, on a different computer: this is what reproducible means.
+
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 aws s3 sync $COURSE_BUCKET/results/${COURSE_USER:?}/ results_aws/
@@ -328,6 +388,8 @@ for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phag
 ```
 
 **2. In `nextflow log`, compare two DURATIONs: yesterday’s run from about 14:30, and today’s `-profile awsbatch` run.**
+
+**Why:** It shows what the cloud bought you in time: 20 isolates on many machines against 8 on one.
 
 ```bash
 cd ~/course/day1/3_bactflow

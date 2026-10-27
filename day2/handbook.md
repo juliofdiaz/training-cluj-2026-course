@@ -46,6 +46,9 @@ Three folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (b
 
 <a id="h-5"></a>
 
+
+**Same pairs, same machine as yesterday.** One drives, one navigates with the handbook open; swap roles at every new section, as yesterday.
+
 ## 5. nf-core: use a community pipeline, then borrow one of its modules (S6, 09:15–10:30)
 
 *nf-core is a cookbook in which every recipe was tested in many kitchens before it was printed. Today you use one whole recipe, then take one tested step and add it to your own.*
@@ -494,7 +497,7 @@ Why was the cloud run not 20 times faster, or 2.5 times slower?
 
 ## 7. Capstone: the ward cluster (S8, 14:00–16:25)
 
-**What we're doing:** deciding, alone and with evidence, which of your 8 isolates can be trusted, and writing it down so others can repeat it.
+**What we're doing:** deciding with your partner, and with evidence, which of your 8 isolates can be trusted, and writing it down so others can repeat it.
 
 **Everything for the capstone is in one file: `brief.md`.** It has the scenario, what to fill in and where the evidence is, the timings, and hints. You write your answers in `report.md`, in the same folder.
 
@@ -549,7 +552,7 @@ The course machines are switched off after the course. To keep your work, in VS 
 
 ### Final self-check
 
-- [ ] `aws s3 ls $COURSE_BUCKET/work/` no longer lists your name
+- [ ] `aws s3 ls $COURSE_BUCKET/work/` no longer lists your ID
 - [ ] `~/course/day2/2_capstone/report.md`: sections A–C filled in
 - [ ] Your 8 rows in the class spreadsheet have a verdict and a reason
 

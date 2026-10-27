@@ -1,7 +1,7 @@
 # Capstone brief: "The ward cluster"
 
 **Time:** 14:05 section A · 15:00 coffee · 15:15 section B · 15:30 section C · 15:45 stop, verdicts into the class spreadsheet · 15:50 one-minute verdicts.
-**Work alone**, on your own results. Everything is in this folder, `~/course/day2/2_capstone/`.
+**Work as a pair**, on your own results: one of you finds the evidence, the other writes it into `report.md`; swap at each section, A, B and C. Everything is in this folder, `~/course/day2/2_capstone/`.
 
 ## Scenario
 
@@ -33,9 +33,9 @@ ls results_aws/                   # your cloud results, through the shortcut
 | C. Reproducibility statement | Exact commands, pipeline version, Nextflow version, `software_versions.tsv` (Mash is in it now), the species database you used, samplesheet checksums (`MD5SUMS`) |
 | *Optional:* one extension from `extensions.md` (in this folder) | Only if you finish A–C early |
 
-## Your one-minute verdict (15:50, from your seat)
+## Your pair's one-minute verdict (15:50, from your seats)
 
-At 15:45, open the class spreadsheet and fill in **Verdict** (PASS, WARN or FAIL) and a one-line **Reason** in your 8 rows. Then, in one minute, say:
+At 15:45, open the class spreadsheet and fill in **Verdict** (PASS, WARN or FAIL) and a one-line **Reason** in your 8 rows. Then, in one minute, your pair says (one speaks, or you share it):
 1. Which isolates you would act on, and which not.
 2. The one piece of evidence that decided it.
 3. One sentence on the cluster question.

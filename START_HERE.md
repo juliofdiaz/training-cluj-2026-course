@@ -1,9 +1,10 @@
 # Start here
 
-Welcome! Everything for the two days is in this folder, `~/course`, on your own course machine.
+Welcome! Everything for the two days is in this folder, `~/course`, on your course machine: one machine per pair.
 
 ## How to work
 
+- **You work in pairs, on one course machine.** One of you types (the *driver*). The other keeps the handbook open, reads each step aloud, checks the "You should see" and leads the **Answer:** questions (the *navigator*). **Swap roles at every new section.** Both of you should be able to explain every step: if the navigator can't, slow down.
 - **Open the handbook for the day** in VS Code (*File → Open File…*, or click it in the Explorer on the left):
   - Day 1: `day1/handbook.md`
   - Day 2: `day2/handbook.md`

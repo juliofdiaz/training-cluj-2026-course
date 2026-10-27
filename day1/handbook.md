@@ -51,12 +51,13 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 4. **The work folder and `-resume`:** Nextflow remembers what is already done.
 5. **Config and profiles:** the same code runs in a different place (`-profile docker` here, `-profile apptainer` on a cluster).
 
-**What you leave with:** a pipeline you built and ran yourself, your notes, and your results next to everyone else's in the class spreadsheet. Tomorrow you keep working in the same folder.
+**What you leave with:** a pipeline you and your partner built and ran yourselves, your notes, and your results next to everyone else's in the class spreadsheet. Tomorrow you keep working in the same folder.
 
 <a id="h-how-to-use-this-handbook"></a>
 
 ## How to use this handbook
 
+- **You work in pairs, on one course machine.** One of you types (the *driver*). The other keeps this handbook open, reads each step aloud, checks the "You should see" and leads the **Answer:** questions (the *navigator*). **Swap roles at every new section.** Both of you should be able to explain every step: if the navigator can't, slow down.
 - Grey boxes are commands. Type them, or copy them from this handbook (on your machine: `~/course/day1/handbook.md`; right-click → *Open Preview* to read it formatted). `~/course/START_HERE.md` shows what is in each folder.
 - **Answer:** marks a question. Write short answers in your notes file, `~/course/notes.md` (one file for both days). They help you tomorrow and in the capstone.
 - **Stuck?** Check the troubleshooting table at the end of this handbook. Still stuck after 3 minutes? Raise your hand: an instructor comes to you. In the morning, compare your file with the solution file; in the afternoon, copy the checkpoint named in the step. Debugging a typo is not today's goal.
@@ -70,7 +71,7 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-**1. Find your name on the address list on the screen, and connect to that address.** The login details are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
+**1. Find your names on the address list on the screen, and connect to that address.** There is one machine per pair: connect both laptops to it, the driver's to type and the navigator's to keep this handbook open. The login details are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
 
 **2. Run the machine check: `bash ~/course/tools/check_vm.sh`.**
 
@@ -793,22 +794,22 @@ Note anything odd: tomorrow's capstone is about this.
 
 ```bash
 cd ~/course/day1/3_bactflow
-bash ~/course/tools/sheet_rows.sh "Your Name"
+bash ~/course/tools/sheet_rows.sh "<your names>"
 ```
 
-It prints 8 lines, one per isolate: your name, the sample, its sequence type (ST) and its resistance genes.
+Type both your names, in quotes, for example `"Ana Pop & Ion Ionescu"`. It prints 8 lines, one per isolate: your names, the sample, its sequence type (ST) and its resistance genes.
 
 1. Select the 8 lines in the terminal and copy them.
 2. Open the class spreadsheet: **<RESULTS_SHEET_URL>** (the link is also on the board).
 3. Click the cell in column A of the first empty row, once, and paste. The four values go into four columns.
 
-Leave other people's rows alone. Tomorrow, in the capstone, you add a verdict and a reason to each of your 8 rows.
+Leave other pairs' rows alone. Tomorrow, in the capstone, you add a verdict and a reason to each of your 8 rows.
 
 <a id="h-self-check"></a>
 
 ### Self-check
 
-- [ ] The sheet has 8 rows with your name
+- [ ] The sheet has 8 rows with your names
 - [ ] Each row has an ST (or `none`) and its resistance genes, each in its own column
 
 ---

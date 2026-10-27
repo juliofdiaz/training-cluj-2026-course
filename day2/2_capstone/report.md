@@ -1,4 +1,4 @@
-# Capstone report: ____________ (your name)
+# Capstone report: ____________ (your names)
 
 ## A. QC triage
 

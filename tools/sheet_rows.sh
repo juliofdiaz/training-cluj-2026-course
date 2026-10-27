@@ -2,14 +2,14 @@
 # sheet_rows.sh: print your bactflow results as rows for the class spreadsheet.
 #
 #   cd ~/course/day1/3_bactflow
-#   bash ~/course/tools/sheet_rows.sh "Your Name"              # uses results/
-#   bash ~/course/tools/sheet_rows.sh "Your Name" results_aws  # another results folder
+#   bash ~/course/tools/sheet_rows.sh "Ana Pop & Ion Ionescu"              # your pair's names; uses results/
+#   bash ~/course/tools/sheet_rows.sh "Ana Pop & Ion Ionescu" results_aws  # another results folder
 #
 # One line per isolate, tab-separated: Name, Sample, ST, Resistance genes.
 # Select the lines, copy them, and paste them into column A of the first
 # empty row of the sheet: Google Sheets splits them into columns.
 set -euo pipefail
-NAME=${1:?usage: bash ~/course/tools/sheet_rows.sh "Your Name" [results_folder]}
+NAME=${1:?usage: bash ~/course/tools/sheet_rows.sh "<your names>" [results_folder]}
 RES=${2:-results}
 MLST=$RES/typing/mlst_summary.tsv
 AMR=$RES/amr/amr_summary.tsv

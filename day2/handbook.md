@@ -2,6 +2,31 @@
 
 *Reproducible Genomics using Containers, Workflow Managers and Cloud Computing · Cluj-Napoca, October 2026*
 
+## Contents
+
+- [What we will do today](#h-what-we-will-do-today)
+- [5. nf-core: use a community pipeline, then borrow one of its modules (S6, 09:15–10:30)](#h-5)
+  - [5.1 Read a pipeline like a user (09:25, the instructor demonstrates)](#h-5-1)
+  - [5.2 Prepare bacass for our 8 isolates (09:30)](#h-5-2)
+  - [5.3 A tested step from nf-core (09:45, the instructor demonstrates)](#h-5-3)
+  - [5.4 Add the species check to your pipeline (09:55)](#h-5-4)
+- [6. Run it in the cloud (S7, 10:45–12:30, and 13:30–14:00)](#h-6)
+  - [6.1 AWS in 40 minutes (10:45, the instructor presents and demonstrates)](#h-6-1)
+  - [6.2 Check your access (11:25)](#h-6-2)
+  - [6.3 Run bactflow on AWS Batch (11:40, the instructor demonstrates first)](#h-6-3)
+  - [6.4 While it runs: look inside the cloud (12:05)](#h-6-4)
+  - [6.5 After lunch: did your cloud run finish? (13:30)](#h-6-5)
+  - [6.6 Compare laptop and cloud (13:40)](#h-6-6)
+- [7. Capstone: the ward cluster (S8, 14:00–16:25)](#h-7)
+- [8. Wrap-up: clean up, and check your results (16:25, 22 min)](#h-8)
+  - [8.1 Clean up the cloud first](#h-8-1)
+  - [8.2 Check the class spreadsheet](#h-8-2)
+  - [8.3 Optional: keep your work](#h-8-3)
+- [Troubleshooting](#h-troubleshooting)
+- [Glossary](#h-glossary)
+
+<a id="h-what-we-will-do-today"></a>
+
 ## What we will do today
 
 | Time | Session | By the end you will have |
@@ -19,9 +44,13 @@ Three folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (b
 
 ---
 
+<a id="h-5"></a>
+
 ## 5. nf-core: use a community pipeline, then borrow one of its modules (S6, 09:15–10:30)
 
 *nf-core is a cookbook in which every recipe was tested in many kitchens before it was printed. Today you use one whole recipe, then take one tested step and add it to your own.*
+
+<a id="h-5-1"></a>
 
 ### 5.1 Read a pipeline like a user (09:25, the instructor demonstrates)
 
@@ -37,6 +66,8 @@ Afterwards, on <https://nf-co.re/bacass/2.6.1>, **answer**:
 1. What does bacass do, in one sentence?
 2. Which parameters are required?
 3. Why do we always add `-r 2.6.1`?
+
+<a id="h-5-2"></a>
 
 ### 5.2 Prepare bacass for our 8 isolates (09:30)
 
@@ -98,6 +129,8 @@ In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run 
 
 **Answer:** what is the difference between a setting in `params.yaml` and a setting in a `-c` config file? Which one does `assembler: unicycler` belong in?
 
+<a id="h-5-3"></a>
+
 ### 5.3 A tested step from nf-core (09:45, the instructor demonstrates)
 
 **What we're doing:** watching. Your bactflow has no species check: if a sample is contaminated, nothing in it tells you. nf-core has a tested module for that, **MASH_SCREEN**. Mash compares your reads with about 90,000 reference genomes and lists the ones it finds in them. Nothing to type yet.
@@ -106,6 +139,8 @@ In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run 
 cd ~/course/day1/3_bactflow
 nextflow module search mash            # nf-core's modules, from Nextflow's own module registry
 ```
+
+<a id="h-5-4"></a>
 
 ### 5.4 Add the species check to your pipeline (09:55)
 
@@ -201,9 +236,13 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 
 ---
 
+<a id="h-6"></a>
+
 ## 6. Run it in the cloud (S7, 10:45–12:30, and 13:30–14:00)
 
 *Cloud computing is renting computers by the second, like renting extra kitchens for a wedding instead of building them.*
+
+<a id="h-6-1"></a>
 
 ### 6.1 AWS in 40 minutes (10:45, the instructor presents and demonstrates)
 
@@ -220,6 +259,8 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 | CloudWatch | The logbook | Where task logs go |
 
 **Answer:** in the console tour, where would you look for (a) your task's files, (b) its log, (c) the machine it ran on?
+
+<a id="h-6-2"></a>
 
 ### 6.2 Check your access (11:25)
 
@@ -267,6 +308,8 @@ aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 **Done when:** the check's last line says `Ready.`, and `aws s3 ls` lists the reads.
 
 **Never** paste access keys into a file or a chat.
+
+<a id="h-6-3"></a>
 
 ### 6.3 Run bactflow on AWS Batch (11:40, the instructor demonstrates first)
 
@@ -326,6 +369,8 @@ The jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appe
 
 If the run stops or fails, fix the cause and run `bash run_aws.sh` again from the same folder. `-resume` reuses every finished task, so you don't pay for them twice.
 
+<a id="h-6-4"></a>
+
 ### 6.4 While it runs: look inside the cloud (12:05)
 
 **What we're doing:** finding where the cloud keeps your run: its work folders in S3, and each task's Batch job.
@@ -356,6 +401,8 @@ aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/
 (The instructor shows one of your jobs and its log in the console on the projector. `nextflow log last` with `-f` doesn't work while the run is going: the run keeps its records locked until it ends.)
 
 **Before lunch:** if the run is still going, leave your laptop open, or simply run `bash run_aws.sh` again after lunch: `-resume` reuses every finished task.
+
+<a id="h-6-5"></a>
 
 ### 6.5 After lunch: did your cloud run finish? (13:30)
 
@@ -391,6 +438,8 @@ bash run_aws.sh
 **Done when:** your last run says `OK`, or a restarted run is going.
 
 Still failing at 13:40? Go on to section 6.6 with what you have, and raise your hand. The capstone also works from your laptop results (section 7).
+
+<a id="h-6-6"></a>
 
 ### 6.6 Compare laptop and cloud (13:40)
 
@@ -441,6 +490,8 @@ Why was the cloud run not 20 times faster, or 2.5 times slower?
 
 ---
 
+<a id="h-7"></a>
+
 ## 7. Capstone: the ward cluster (S8, 14:00–16:25)
 
 **What we're doing:** deciding, alone and with evidence, which of your 8 isolates can be trusted, and writing it down so others can repeat it.
@@ -458,7 +509,11 @@ Open `brief.md` in VS Code (right-click → *Open Preview*), and `report.md` nex
 
 ---
 
+<a id="h-8"></a>
+
 ## 8. Wrap-up: clean up, and check your results (16:25, 22 min)
+
+<a id="h-8-1"></a>
 
 ### 8.1 Clean up the cloud first
 
@@ -478,13 +533,19 @@ aws s3 rm $COURSE_BUCKET/results/${COURSE_USER:?}/ --recursive
 
 **Done when:** `aws s3 ls $COURSE_BUCKET/work/` no longer lists your ID.
 
+<a id="h-8-2"></a>
+
 ### 8.2 Check the class spreadsheet
 
 Your 8 rows each have an ST, resistance genes, a **Verdict** and a **Reason**.
 
+<a id="h-8-3"></a>
+
 ### 8.3 Optional: keep your work
 
 The course machines are switched off after the course. To keep your work, in VS Code right-click a folder → *Download*. The useful, small parts are `~/course/day2/2_capstone/report.md`, `~/course/notes.md`, `~/course/day1/3_bactflow/results_aws/`, and `main.nf`, `nextflow.config` and `modules/` in `~/course/day1/3_bactflow/`; skip any `work/` folder.
+
+<a id="h-final-self-check"></a>
 
 ### Final self-check
 
@@ -493,6 +554,8 @@ The course machines are switched off after the course. To keep your work, in VS 
 - [ ] Your 8 rows in the class spreadsheet have a verdict and a reason
 
 ---
+
+<a id="h-troubleshooting"></a>
 
 ## Troubleshooting
 
@@ -508,6 +571,8 @@ The course machines are switched off after the course. To keep your work, in VS 
 | `nextflow module install` fails | No access to the module registry | Copy the finished step instead: `cp -r ~/course/help/checkpoints/step4/. .` |
 | MASH_SCREEN runs, but so does everything else | You changed FASTP or SHOVILL, launched from another folder, or ran something else in this folder since yesterday | `-resume` reuses the **last** run in this folder. Run `nextflow log`, copy the SESSION ID of yesterday's last run, and add it: `-resume <SESSION ID>` |
 | Results "missing" after the AWS run | They are in S3 | `aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/` |
+
+<a id="h-glossary"></a>
 
 ## Glossary
 

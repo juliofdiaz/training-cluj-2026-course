@@ -2,6 +2,34 @@
 
 *Reproducible Genomics using Containers, Workflow Managers and Cloud Computing · Cluj-Napoca, October 2026*
 
+## Contents
+
+- [What we will do today](#h-what-we-will-do-today)
+- [How to use this handbook](#h-how-to-use-this-handbook)
+- [0. Setup (09:10, 20 min)](#h-0)
+- [1. Containers for workflows (S2, 10:12–10:32)](#h-1)
+  - [1.1 Run a tool from a pinned container](#h-1-1)
+- [2. Nextflow fundamentals (S3, 11:15–12:30)](#h-2)
+  - [2.1 Your first pipeline](#h-2-1)
+  - [2.2 Channels: from a samplesheet to \[meta, reads\]](#h-2-2)
+  - [2.3 A real tool in a container](#h-2-3)
+- [3. Build bactflow I: reads to assemblies (S4, 13:40–15:00)](#h-3)
+  - [3.1 A working FASTP pipeline (13:40)](#h-3-1)
+  - [3.2 Connect SHOVILL yourself (14:00)](#h-3-2)
+  - [3.3 Launch all 8 samples (14:25)](#h-3-3)
+- [4. Build bactflow II: typing and the full pipeline (S5, 15:15–16:30)](#h-4)
+  - [4.1 One step, one file (15:15, the instructor demonstrates)](#h-4-1)
+  - [4.2 Write the MLST step yourself (15:25)](#h-4-2)
+  - [4.3 Collect all 8 reports into one: wire MultiQC (15:50)](#h-4-3)
+  - [4.4 Finish the pipeline and look at the results (16:05)](#h-4-4)
+- [5. Add your results to the class spreadsheet (16:30, 10 min)](#h-5)
+- [6. Optional: git in 15 minutes (after 17:00, or at home)](#h-6)
+- [7. Further reading (after the course, or if you finish early)](#h-7)
+- [Troubleshooting](#h-troubleshooting)
+- [Glossary](#h-glossary)
+
+<a id="h-what-we-will-do-today"></a>
+
 ## What we will do today
 
 | Time | Session | By the end you will have |
@@ -25,6 +53,8 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What you leave with:** a pipeline you built and ran yourself, your notes, and your results next to everyone else's in the class spreadsheet. Tomorrow you keep working in the same folder.
 
+<a id="h-how-to-use-this-handbook"></a>
+
 ## How to use this handbook
 
 - Grey boxes are commands. Type them, or copy them from this handbook (on your machine: `~/course/day1/handbook.md`; right-click → *Open Preview* to read it formatted). `~/course/START_HERE.md` shows what is in each folder.
@@ -33,6 +63,8 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 - Every block of commands starts with a `cd` line. Run it first, even if you think you are already there.
 
 ---
+
+<a id="h-0"></a>
 
 ## 0. Setup (09:10, 20 min)
 
@@ -56,9 +88,13 @@ You should see one line per check, `[ OK ]` or `[WARN]`, and at the end `Ready.`
 
 ---
 
+<a id="h-1"></a>
+
 ## 1. Containers for workflows (S2, 10:12–10:32)
 
 *A container is a tool packed with everything it needs, like a meal kit: same dish in any kitchen.*
+
+<a id="h-1-1"></a>
 
 ### 1.1 Run a tool from a pinned container
 
@@ -112,11 +148,15 @@ Finished early? Open `README.md` in `~/course/day1/1_containers/`: optional extr
 
 ---
 
+<a id="h-2"></a>
+
 ## 2. Nextflow fundamentals (S3, 11:15–12:30)
 
 *Nextflow is the head chef: you hand over the recipe, it tells each cook what to do and when, and it remembers what is already cooked.*
 
 The files are in `~/course/day1/2_nextflow_basics/`. Open them in VS Code from there.
+
+<a id="h-2-1"></a>
 
 ### 2.1 Your first pipeline
 
@@ -199,6 +239,8 @@ nextflow run 01_hello.nf --greeting 'Salut' -resume
 - Why did changing the greeting make every task run again?
 - `-resume` has one dash and `--greeting` has two. What is the difference?
 
+<a id="h-2-2"></a>
+
 ### 2.2 Channels: from a samplesheet to `[meta, reads]`
 
 **What we're doing:** turning a samplesheet into one item per sample, `[meta, reads]`, the shape every step this afternoon (and every nf-core pipeline) uses.
@@ -259,6 +301,8 @@ You should see: `[id:SA01, group:ward_A] -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]
 - **TODO 2:** count the samples: `reads.count().view { n -> "Number of samples: ${n}" }`. You should see `Number of samples: 8`.
 - **TODO 3:** gather all sample IDs into one list: `reads.map { meta, _files -> meta.id }.collect().view()`. How many items does that channel emit?
 - **TODO 4:** group the IDs by ward: `reads.map { meta, _files -> tuple(meta.group, meta.id) }.groupTuple().view()`.
+
+<a id="h-2-3"></a>
 
 ### 2.3 A real tool in a container
 
@@ -336,9 +380,13 @@ nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/sample
 
 ---
 
+<a id="h-3"></a>
+
 ## 3. Build bactflow I: reads to assemblies (S4, 13:40–15:00)
 
 This afternoon you build **bactflow**: reads → fastp → Shovill (assembly) → typing and resistance genes → one QC report. You don't type it all: you start from working code, add the important parts yourself, and copy the rest.
+
+<a id="h-3-1"></a>
 
 ### 3.1 A working FASTP pipeline (13:40)
 
@@ -400,6 +448,8 @@ You should see a report for SA01 and one for SA02. From now on, **always run fro
 
 **Done when:** `ls results/qc/fastp/` shows reports for SA01 and SA02, and you have four answers.
 
+<a id="h-3-2"></a>
+
 ### 3.2 Connect SHOVILL yourself (14:00)
 
 **What we're doing:** adding the assembly step. The SHOVILL process is already written; you connect it to FASTP and tell Nextflow where to save the assemblies.
@@ -460,6 +510,8 @@ Stuck? `cp -r ~/course/help/checkpoints/step2/. .` (inside `~/course/day1/3_bact
 
 > **Course mode:** `params.shovill_args` in `nextflow.config` runs Shovill in a fast mode (2 k-mer sizes, no polishing). On our data it gives the same typing and resistance genes in a third of the time. For real projects, drop those options.
 
+<a id="h-3-3"></a>
+
 ### 3.3 Launch all 8 samples (14:25)
 
 **What we're doing:** running all 8 samples before the break, and seeing `-resume` reuse the 2 that are already done.
@@ -489,11 +541,17 @@ Finished early? Open `results/pipeline_info/timeline_*.html`: which task took lo
 
 ---
 
+<a id="h-4"></a>
+
 ## 4. Build bactflow II: typing and the full pipeline (S5, 15:15–16:30)
+
+<a id="h-4-1"></a>
 
 ### 4.1 One step, one file (15:15, the instructor demonstrates)
 
 **What we're doing:** watching. A process can live in its own file (a *module*) and be used with one `include` line. Tomorrow's nf-core pipeline is built entirely from modules.
+
+<a id="h-4-2"></a>
 
 ### 4.2 Write the MLST step yourself (15:25)
 
@@ -596,6 +654,8 @@ You should see MLST `8 of 8`, then one line per sample: its name, `saureus` and 
 
 Stuck? `fasta` is not defined: the `input:` line must say `path(fasta)`. Otherwise compare your module with `~/course/help/pipeline/modules/mlst.nf` (it has one extra output line, which records MLST's version). No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
 
+<a id="h-4-3"></a>
+
 ### 4.3 Collect all 8 reports into one: wire MultiQC (15:50)
 
 **What we're doing:** adding a step that waits for all 8 samples and runs once: 8 fastp reports in, one QC report out.
@@ -670,6 +730,8 @@ You should see FASTP, SHOVILL and MLST `cached: 8`, MULTIQC `1 of 1`, then `mult
 
 Stuck? MULTIQC ran 8 times: the `.collect()` is missing. Anything else: section 4.4, step 1, copies the finished pipeline, MultiQC included.
 
+<a id="h-4-4"></a>
+
 ### 4.4 Finish the pipeline and look at the results (16:05)
 
 **What we're doing:** adding the last two steps, ready-made, then checking whether a pipeline that "finished without errors" gave results we can trust.
@@ -723,6 +785,8 @@ Note anything odd: tomorrow's capstone is about this.
 
 ---
 
+<a id="h-5"></a>
+
 ## 5. Add your results to the class spreadsheet (16:30, 10 min)
 
 **What we're doing:** putting your 8 results next to everyone else's, so we can compare them tomorrow. No account needed.
@@ -740,12 +804,16 @@ It prints 8 lines, one per isolate: your name, the sample, its sequence type (ST
 
 Leave other people's rows alone. Tomorrow, in the capstone, you add a verdict and a reason to each of your 8 rows.
 
+<a id="h-self-check"></a>
+
 ### Self-check
 
 - [ ] The sheet has 8 rows with your name
 - [ ] Each row has an ST (or `none`) and its resistance genes, each in its own column
 
 ---
+
+<a id="h-6"></a>
 
 ## 6. Optional: git in 15 minutes (after 17:00, or at home)
 
@@ -779,6 +847,8 @@ Sharing your history with other people is what GitHub and GitLab are for. You do
 
 ---
 
+<a id="h-7"></a>
+
 ## 7. Further reading (after the course, or if you finish early)
 
 We left these out of class time on purpose: they are useful, but not needed to build and run a pipeline today. Each one points to a course file that shows it (paths inside `~/course`), and to the official documentation.
@@ -801,6 +871,8 @@ We left these out of class time on purpose: they are useful, but not needed to b
 
 ---
 
+<a id="h-troubleshooting"></a>
+
 ## Troubleshooting
 
 | Symptom | Likely cause | Fix |
@@ -813,6 +885,8 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | `-resume` re-runs everything | Different launch folder, or you edited the process code | Launch from `~/course/day1/3_bactflow/`. Compare your module with `~/course/help/pipeline/modules/`. |
 | Shovill `exit 137` | Shovill asked for more memory than your machine has, so the system stopped it | Set `process_high` memory to `6.GB` in `conf/base.config` (so it fits), then run again with `-resume` |
 | Pasted rows land in one cell of the spreadsheet | You double-clicked into the cell before pasting | Undo, click the cell once, and paste again |
+
+<a id="h-glossary"></a>
 
 ## Glossary
 

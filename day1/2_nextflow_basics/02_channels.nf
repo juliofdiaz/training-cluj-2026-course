@@ -3,7 +3,7 @@
  * 02_channels.nf — from a samplesheet to the channel shape every
  * nf-core pipeline uses:  [ meta, [ R1, R2 ] ]
  *
- * Instructions: Day 1 handbook §2.2. Change only the lines marked TODO.
+ * Instructions: Day 1 handbook section 2.2. Change only the lines marked TODO.
  */
 
 params.input = "${projectDir}/../../data/reads/samplesheet.csv"
@@ -15,14 +15,14 @@ workflow {
 
     // Step B: build [ meta, [R1, R2] ] tuples
     reads = rows.map { row ->
-        // TODO 1: replace the next line (handbook §2.2)
+        // TODO 1: replace the next line (handbook section 2.2)
         def meta = [id: row.sample]
         tuple(meta, [file(row.fastq_1), file(row.fastq_2)])
     }
     // TODO 1: then print ${meta} instead of ${meta.id} here
     reads.view { meta, files -> "${meta.id} -> ${files*.name}" }
 
-    // TODO 2: count the samples (handbook §2.2)
+    // TODO 2: count the samples (handbook section 2.2)
 
 
     // TODO 3 and TODO 4 (optional): below this line

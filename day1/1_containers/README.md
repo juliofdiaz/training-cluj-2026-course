@@ -1,6 +1,6 @@
 # Docker exercises (S2)
 
-**The instructions are in the Day 1 handbook, §1.** This page has optional extras, for when you finish §1 early or want more after the course. Nothing later depends on them.
+**The instructions are in the Day 1 handbook, section 1.** This page has optional extras, for when you finish section 1 early or want more after the course. Nothing later depends on them.
 
 Run everything from this folder; the course reads are in `~/course/data/reads/`:
 
@@ -11,7 +11,7 @@ IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0
 
 ## Extra A: who owns the files a container writes? (≈5 min)
 
-In §1.1 you ran fastp with `-u $(id -u):$(id -g)`. Run it once without, with new report names:
+In section 1.1 you ran fastp with `-u $(id -u):$(id -g)`. Run it once without, with new report names:
 
 ```bash
 cd ~/course/day1/1_containers
@@ -28,14 +28,14 @@ rm -f SA01_root.*
 
 ## Extra B: run the image by its fingerprint (≈3 min)
 
-§1.2 printed the image's digest. Copy the part after `@`, `sha256:…`, and run the same image by it:
+Section 1.1 printed the image's digest. Copy the part after `@`, `sha256:…`, and run the same image by it:
 
 ```bash
 cd ~/course/day1/1_containers
 docker run --rm quay.io/biocontainers/fastp@sha256:<paste> fastp --version
 ```
 
-**You should see** the same version as in §1.1. A tag like `latest`, or even `1.4.0`, can be moved by whoever controls the registry; a digest cannot. That is why a paper's Methods should give both.
+**You should see** the same version as in section 1.1. A tag like `latest`, or even `1.4.0`, can be moved by whoever controls the registry; a digest cannot. That is why a paper's Methods should give both.
 
 ## Extra C: build your own image (≈15 min)
 

@@ -14,7 +14,7 @@ nextflow run main.nf -profile docker,test
 # full cohort
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv
 
-# AWS Batch (Day 2 handbook §6)
+# AWS Batch (Day 2 handbook section 6)
 nextflow run main.nf -profile awsbatch --input s3://<course-bucket>/data/samplesheet_s3.csv
 ```
 

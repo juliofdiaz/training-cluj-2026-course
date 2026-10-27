@@ -2,7 +2,7 @@
 /*
  * 03_first_process.nf — a real tool, in a real container, on real data
  *
- * Instructions: Day 1 handbook §2.3. Change only the lines marked TODO.
+ * Instructions: Day 1 handbook section 2.3. Change only the lines marked TODO.
  */
 
 params.input = "${projectDir}/../../data/reads/samplesheet_test.csv"
@@ -17,9 +17,9 @@ process FASTP {
 
     output:
     tuple val(meta), path("${meta.id}_trimmed_R{1,2}.fastq.gz"), emit: reads
-    // TODO 1: add the JSON report as a second output here (handbook §2.3)
+    // TODO 1: add the JSON report as a second output here (handbook section 2.3)
 
-    // TODO 2: in the script below, replace --thread 2 (handbook §2.3)
+    // TODO 2: in the script below, replace --thread 2 (handbook section 2.3)
     script:
     """
     fastp \\

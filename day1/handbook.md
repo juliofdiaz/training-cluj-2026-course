@@ -16,7 +16,7 @@
 
 Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
-**Today's five ideas.** Everything else is in *Further reading* (§7), for later.
+**Today's five ideas.** Everything else is in *Further reading* (section 7), for later.
 1. **A container pins a tool:** same version, any computer.
 2. **A process is one step:** what goes in, what comes out, the command, the container.
 3. **A channel carries one item per sample:** `[meta, reads]`.
@@ -38,15 +38,19 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-Your machine's **address** is on the screen, next to your name; the **login details** are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`. Then:
+**1. Find your name on the address list on the screen, and connect to that address.** The login details are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
+
+**2. Run the machine check: `bash ~/course/tools/check_vm.sh`.**
 
 ```bash
 bash ~/course/tools/check_vm.sh
 ```
 
-**Done when:** the last line says `Ready.` (`WARN` lines are fine). Each `FAIL` line prints its fix: try it, then raise your hand if it still fails.
+You should see one line per check, `[ OK ]` or `[WARN]`, and at the end `Ready.`
 
-> If the check says Nextflow is too old: `export NXF_VER=26.04.9`, add the same line to `~/.bashrc`, and run the check again.
+**3. A FAIL line? Try the fix it prints.** Then run the check again. Still failing? Raise your hand. If the check says Nextflow is too old: `export NXF_VER=26.04.9`, add the same line to `~/.bashrc`, and run the check again.
+
+**Done when:** the last line says `Ready.` (`WARN` lines are fine).
 
 ---
 
@@ -56,7 +60,9 @@ bash ~/course/tools/check_vm.sh
 
 ### 1.1 Run a tool from a pinned container
 
-**What we're doing:** running fastp without installing it, from a container whose version can never change.
+**What we're doing:** running fastp without installing it, from a container whose version can never change, and finding the image's fingerprint: the name you would put in a paper.
+
+**1. Pull fastp and print its version.**
 
 ```bash
 cd ~/course/day1/1_containers
@@ -65,34 +71,32 @@ docker pull $IMG
 docker run --rm $IMG fastp --version
 ```
 
-Now on real data. The container sees only the folders you share with `-v`: the reads (as `/data`) and this folder (as `/work`), where the reports go:
+You should see `fastp 1.4.0`.
+
+**2. Run it on SA01: share the folders with `-v`.** The container sees only the folders you share with `-v`: the reads (as `/data`) and this folder (as `/work`), where the reports go.
 
 ```bash
 cd ~/course/day1/1_containers
-IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as above
+IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as in step 1
 docker run --rm -u $(id -u):$(id -g) -v ~/course/data/reads:/data -v "$PWD":/work -w /work $IMG \
   fastp -i /data/SA01_R1.fastq.gz -I /data/SA01_R2.fastq.gz -o /tmp/r1.fq.gz -O /tmp/r2.fq.gz \
         -j SA01.fastp.json -h SA01.fastp.html
 ls -l SA01.fastp.*
 ```
 
-**Done when:** `ls` shows `SA01.fastp.html` and `SA01.fastp.json`.
+You should see `SA01.fastp.html` and `SA01.fastp.json`. **Answer:** where did `/tmp/r1.fq.gz` go? (Hint: only folders shared with `-v` stay.)
 
-**Answer:** where did `/tmp/r1.fq.gz` go? (Hint: only folders shared with `-v` stay.)
-
-### 1.2 Tags and digests
-
-**What we're doing:** finding the image's fingerprint, the name you would put in a paper.
+**3. Print the image’s fingerprint (digest) with `docker inspect`.**
 
 ```bash
 cd ~/course/day1/1_containers
-IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as in 1.1
+IMG=quay.io/biocontainers/fastp:1.4.0--h43da1c4_0      # the same image as in step 1
 docker inspect --format '{{index .RepoDigests 0}}' $IMG
 ```
 
-**Done when:** it prints the image name, then `@sha256:` and a long code.
+You should see the image name, then `@sha256:` and a long code. **Answer:** what is the difference between `fastp:latest`, `fastp:1.4.0--h43da1c4_0` and `fastp@sha256:…`? Which would you put in a paper?
 
-**Answer:** what is the difference between `fastp:latest`, `fastp:1.4.0--h43da1c4_0` and `fastp@sha256:…`? Which would you put in a paper?
+**Done when:** `ls` shows `SA01.fastp.html`, and `docker inspect` printed a name with `@sha256:`.
 
 Finished early? Open `README.md` in `~/course/day1/1_containers/`: optional extras (who owns the files a container writes, building your own image).
 
@@ -108,28 +112,52 @@ The files are in `~/course/day1/2_nextflow_basics/`. Open them in VS Code from t
 
 **What we're doing:** running a tiny pipeline, looking inside the folder where each task runs, and seeing `-resume` skip work that is already done.
 
+**1. Run `01_hello.nf`: three tasks run.**
+
 ```bash
 cd ~/course/day1/2_nextflow_basics
-nextflow run 01_hello.nf                               # 1. three tasks run
-ls -a work/4e/546307*/                                 # 2. use the hash printed in YOUR run
-cat work/4e/546307*/.command.sh                        # 3. the exact command that ran
-nextflow run 01_hello.nf -resume                       # 4. prints cached: 3
-nextflow run 01_hello.nf --greeting 'Salut' -resume    # 5. all 3 run again
+nextflow run 01_hello.nf
 ```
 
-**Done when:** command 4 printed `cached: 3`, and command 5 ran all 3 tasks again.
+You should see a line like `[4e/546307] SAY_HELLO (Napoca) | 3 of 3 ✔`, then three greetings. The code in brackets, `4e/546307`, is the start of one task's work folder.
+
+**2. Look inside one task’s work folder: use the hash from your own run.** Replace `4e/546307` with the code printed in your run:
+
+```bash
+cd ~/course/day1/2_nextflow_basics
+ls -a work/4e/546307*/                                 # the task's files
+cat work/4e/546307*/.command.sh                        # the exact command that ran
+```
+
+You should see files like `.command.sh`, `.command.log` and the task's `.txt` output, then the `echo` line that ran.
+
+**3. Run it again with `-resume`: it prints `cached: 3`.**
+
+```bash
+cd ~/course/day1/2_nextflow_basics
+nextflow run 01_hello.nf -resume
+```
+
+**4. Change the greeting: all 3 tasks run again.**
+
+```bash
+cd ~/course/day1/2_nextflow_basics
+nextflow run 01_hello.nf --greeting 'Salut' -resume
+```
+
+**Done when:** step 3 printed `cached: 3`, and step 4 ran all 3 tasks again.
 
 **Answer:**
-1. Why did changing the greeting make every task run again?
-2. `-resume` has one dash and `--greeting` has two. What is the difference?
+- Why did changing the greeting make every task run again?
+- `-resume` has one dash and `--greeting` has two. What is the difference?
 
 ### 2.2 Channels: from a samplesheet to `[meta, reads]`
 
 **What we're doing:** turning a samplesheet into one item per sample, `[meta, reads]`, the shape every step this afternoon (and every nf-core pipeline) uses.
 
-Open `02_channels.nf` in VS Code and read it: Steps A and B are written for you. You change it in two places, marked `TODO 1` and `TODO 2`, and run it after each change.
+Open `02_channels.nf` in VS Code and read it: its Steps A and B are written for you. You change it in two places, marked `TODO 1` and `TODO 2`, and run it after each change.
 
-**First, run it as it is.**
+**1. Run `02_channels.nf` as it is.**
 
 ```bash
 cd ~/course/day1/2_nextflow_basics
@@ -138,7 +166,7 @@ nextflow run 02_channels.nf
 
 You should see 8 `row:` lines (one per samplesheet row), then 8 lines like `SA01 -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`. The order changes from run to run: that's normal.
 
-**TODO 1: give each sample a group.** SA01–SA04 come from `ward_A`, the others from `ward_B`. In Step B, replace the line `def meta = [id: row.sample]` with these two lines:
+**2. TODO 1: give each sample a group, print `${meta}`, run it again.** SA01–SA04 come from `ward_A`, the others from `ward_B`. In Step B, replace the line `def meta = [id: row.sample]` with these two lines:
 
 ```groovy
 def n = row.sample.replace('SA', '') as Integer
@@ -148,7 +176,7 @@ def meta = [id: row.sample, group: n <= 4 ? 'ward_A' : 'ward_B']
 Then, in the `reads.view` line just below, change `${meta.id}` to `${meta}`, and run the same command again.
 You should see: `[id:SA01, group:ward_A] -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`, and so on for all 8.
 
-**TODO 2: count the samples.** On the empty line under `// TODO 2`, add:
+**3. TODO 2: count the samples, run it again.** On the empty line under `// TODO 2`, add:
 
 ```groovy
 reads.count().view { n -> "Number of samples: ${n}" }
@@ -170,7 +198,7 @@ Run it again. You should see `Number of samples: 8`.
 
 Open `03_first_process.nf` in VS Code and read it. The FASTP process runs fastp on one sample; Nextflow runs it once per sample.
 
-**First, run it as it is**, on the 2 test samples:
+**1. Run `03_first_process.nf` as it is, on 2 samples.**
 
 ```bash
 cd ~/course/day1/2_nextflow_basics
@@ -179,7 +207,7 @@ nextflow run 03_first_process.nf -with-docker
 
 You should see 2 FASTP tasks (SA01 and SA02), then 2 lines listing each sample's trimmed reads.
 
-**TODO 1: keep the JSON report.** fastp writes a report, `SA01.fastp.json`, but Nextflow only keeps the files listed under `output:`. Under `// TODO 1`, in the `output:` block, add:
+**2. TODO 1: keep the JSON report as a second output.** fastp writes a report, `SA01.fastp.json`, but Nextflow only keeps the files listed under `output:`. Under `// TODO 1`, in the `output:` block, add:
 
 ```groovy
 tuple val(meta), path("${meta.id}.fastp.json"), emit: json
@@ -188,9 +216,9 @@ tuple val(meta), path("${meta.id}.fastp.json"), emit: json
 Then change the last line of the file to `FASTP.out.json.view()`, and run the same command again.
 You should see 2 lines, each with a path ending in `SA01.fastp.json` or `SA02.fastp.json`.
 
-**TODO 2: use the CPUs Nextflow gives the task.** In the `script:` block, replace `--thread 2` with `--thread ${task.cpus}`. Run it again: the same 2 lines.
+**3. TODO 2: use the CPUs Nextflow gives the task.** In the `script:` block, replace `--thread 2` with `--thread ${task.cpus}`. Run it again: the same 2 lines.
 
-**TODO 3: all 8 samples.** The same pipeline, a different samplesheet:
+**4. TODO 3: run it on all 8 samples.** The same pipeline, a different samplesheet:
 
 ```bash
 cd ~/course/day1/2_nextflow_basics
@@ -201,7 +229,7 @@ nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/sample
 
 **Answer:** with 8 samples, how many fastp tasks ran at the same time on your machine? Why that number?
 
-**Finished early? (optional)** TODO 4: run the TODO 3 command again with `-resume` at the end. What changes, and why? Then the optional extra in `README.md`, in the same folder: settings moved into a config file.
+**Finished early? (optional)** TODO 4: run step 4's command again with `-resume` at the end. What changes, and why? Then the optional extra in `README.md`, in the same folder: settings moved into a config file.
 
 ---
 
@@ -209,46 +237,60 @@ nextflow run 03_first_process.nf -with-docker --input ~/course/data/reads/sample
 
 This afternoon you build **bactflow**: reads → fastp → Shovill (assembly) → typing and resistance genes → one QC report. You don't type it all: you start from working code, add the important parts yourself, and copy the rest.
 
-### 3.1 Step 1: a working FASTP pipeline (13:40)
+### 3.1 A working FASTP pipeline (13:40)
 
 **What we're doing:** starting from a pipeline that already works, and reading it until we can explain every part: where the samples come in, what FASTP takes and gives, and where the results go.
+
+**1. Copy the working FASTP pipeline into your folder.**
 
 ```bash
 cd ~/course/day1/3_bactflow                            # your pipeline's folder
 cp -r ~/course/help/checkpoints/step1/. .
+```
+
+**2. Run it on the 2 test samples.**
+
+```bash
+cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet_test.csv
 ls results/qc/fastp/
 ```
 
-**Done when:** `ls` shows reports for SA01 and SA02.
+You should see a report for SA01 and one for SA02. From now on, **always run from inside `~/course/day1/3_bactflow/`**: `-resume` looks for your work in the folder you launch from.
 
-From now on, **always run from inside `~/course/day1/3_bactflow/`**. `-resume` looks for your work in the folder you launch from.
+**3. Answer the four questions by reading `main.nf` and `nextflow.config`:**
+- Which lines turn the samplesheet into `[meta, reads]`? (You wrote the same thing this morning.)
+- What goes into FASTP, and what are its four outputs?
+- Which container does FASTP use, and where is that written?
+- What does `-profile docker` switch on? Find it in `nextflow.config`.
 
-**Answer**, by reading `main.nf` and `nextflow.config`:
-1. Which lines turn the samplesheet into `[meta, reads]`? (You wrote the same thing this morning.)
-2. What goes into FASTP, and what are its four outputs?
-3. Which container does FASTP use, and where is that written?
-4. What does `-profile docker` switch on? Find it in `nextflow.config`.
+**Done when:** `ls results/qc/fastp/` shows reports for SA01 and SA02, and you have four answers.
 
-### 3.2 Step 2: connect SHOVILL yourself (14:00)
+### 3.2 Connect SHOVILL yourself (14:00)
 
 **What we're doing:** adding the assembly step. The SHOVILL process is already written; you connect it to FASTP and tell Nextflow where to save the assemblies.
+
+**1. Copy the SHOVILL starting point into your folder.**
 
 ```bash
 cd ~/course/day1/3_bactflow
 cp -r ~/course/help/checkpoints/step2_start/. .
 ```
 
-Open `main.nf` and fill in the three TODO lines:
-1. Run SHOVILL on FASTP's trimmed reads: `SHOVILL(FASTP.out.reads)`
-2. Publish its contigs: `assemblies = SHOVILL.out.contigs`
-3. Give them a folder, like `fastp` above it: `assemblies { path 'assemblies' }` (three lines)
+**2. Fill in the three TODO lines in `main.nf`:**
+- TODO 1: run SHOVILL on FASTP's trimmed reads: `SHOVILL(FASTP.out.reads)`
+- TODO 2: publish its contigs: `assemblies = SHOVILL.out.contigs`
+- TODO 3: give them a folder, like `fastp` above it: `assemblies { path 'assemblies' }` (three lines)
+
+**3. Run it on the test samples with `-resume`: FASTP is cached.**
 
 ```bash
 cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet_test.csv -resume
 grep -c '>' results/assemblies/*.fasta
 ```
+
+You should see FASTP `cached: 2`, SHOVILL `2 of 2`, then a contig count for SA01 and SA02.
 
 **Done when:** `grep` prints a contig count for SA01 and SA02.
 
@@ -262,16 +304,20 @@ Stuck? `cp -r ~/course/help/checkpoints/step2/. .` (inside `~/course/day1/3_bact
 
 **What we're doing:** running all 8 samples before the break, and seeing `-resume` reuse the 2 that are already done.
 
-**Answer before you press enter:** how many FASTP and SHOVILL tasks will actually run?
+**1. Write down your prediction: how many FASTP and SHOVILL tasks will run?**
+
+**2. Launch all 8 samples with `-resume`.**
 
 ```bash
 cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
 ```
 
-**Done when:** FASTP and SHOVILL both end with `8 of 8, cached: 2`. It takes a few minutes: keep that terminal open until it finishes.
+**3. Keep that terminal open until it finishes.** It takes a few minutes.
 
-**Answer:** how many minutes did it take? (The `Duration` line at the end.) You compare it with the cloud tomorrow.
+**Done when:** FASTP and SHOVILL both end with `8 of 8, cached: 2`.
+
+**Answer:** was your prediction right? How many minutes did it take? (The `Duration` line at the end.) You compare it with the cloud tomorrow.
 
 > **From now on, don't change the FASTP or SHOVILL code.** Changing it makes all 8 assemblies run again.
 
@@ -289,7 +335,7 @@ Finished early? Open `results/pipeline_info/timeline_*.html`: which task took lo
 
 **What we're doing:** adding a new analysis to your own pipeline, from a spec. Only the new step runs; all 8 assemblies are reused.
 
-In your pipeline's folder, make a `modules` folder, then create the file `modules/mlst.nf` in it:
+**1. Write `modules/mlst.nf` from the spec.** In your pipeline's folder, make a `modules` folder, then create the file `modules/mlst.nf` in it:
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -306,7 +352,9 @@ What goes in `modules/mlst.nf`. Easiest start: copy the whole FASTP process from
 | Output | `tuple val(meta), path("${meta.id}.mlst.tsv"), emit: tsv` |
 | Command | `mlst --label ${meta.id} --threads ${task.cpus} ${fasta} > ${meta.id}.mlst.tsv` |
 
-Then two lines in `main.nf`: `include { MLST } from './modules/mlst'` at the top, and `MLST(SHOVILL.out.contigs)` in the `main:` block, after SHOVILL.
+**2. Add two lines to `main.nf`: the `include`, and `MLST(SHOVILL.out.contigs)`.** `include { MLST } from './modules/mlst'` goes at the top, with the other `include` lines; `MLST(SHOVILL.out.contigs)` goes in the `main:` block, after SHOVILL.
+
+**3. Run all 8 samples with `-resume`.**
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -323,27 +371,41 @@ Stuck? Compare with `~/course/help/pipeline/modules/mlst.nf`.
 
 **What we're doing:** getting the finished bactflow (assembly QC, resistance genes, one QC report, tool versions) without typing it. Tomorrow you add one tested step from nf-core to these files, then run them on 20 isolates in the cloud.
 
+**1. Copy the full pipeline into your folder.**
+
 ```bash
 cd ~/course/day1/3_bactflow
 cp -r ~/course/help/pipeline/{main.nf,modules,assets,conf,nextflow.config} .
+```
+
+**2. Run all 8 samples with `-resume`.**
+
+```bash
+cd ~/course/day1/3_bactflow
 nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv -resume
 ls results/multiqc/
 ```
 
-Only the new steps run (and MLST once more). **Done when:** `ls` shows `multiqc_report.html`. Then look at three small tables:
+Only the new steps run (and MLST once more). You should see `multiqc_report.html`.
+
+**3. Look at the tool versions it recorded.**
 
 ```bash
 cd ~/course/day1/3_bactflow
-cat results/typing/mlst_summary.tsv
-column -t results/amr/amr_summary.tsv
 cat results/pipeline_info/software_versions.tsv
 ```
+
+You should see one line per tool, with its version. Nobody typed them: each step records its own.
+
+**Done when:** `ls results/multiqc/` shows `multiqc_report.html`.
 
 ### 4.4 Look at the results (16:00)
 
 **What we're doing:** checking whether a pipeline that "finished without errors" gave results we can trust.
 
-In `~/course/day1/3_bactflow`, open `results/multiqc/multiqc_report.html` (VS Code: right-click → *Open with Live Preview*, or download it). Then read the two summary tables:
+**1. Open the MultiQC report.** In `~/course/day1/3_bactflow`, open `results/multiqc/multiqc_report.html` (VS Code: right-click → *Open with Live Preview*, or download it).
+
+**2. Read the two summary tables.**
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -351,7 +413,9 @@ cat results/typing/mlst_summary.tsv
 column -t results/amr/amr_summary.tsv
 ```
 
-**Answer:** are all 8 results trustworthy? Note anything odd in your notes file. (Don't fix it: tomorrow's capstone is about this.) **Done when:** your answer is in `~/course/notes.md`.
+**3. Write in `~/course/notes.md`: are all 8 results trustworthy? Don’t fix anything.** Note anything odd: tomorrow's capstone is about this.
+
+**Done when:** your answer is in `~/course/notes.md`.
 
 ---
 
@@ -419,7 +483,7 @@ We left these out of class time on purpose: they are useful, but not needed to b
 |---|---|---|
 | Who owns the files a container writes (`-u`) | `day1/1_containers/README.md`, extra A | <https://docs.docker.com/engine/containers/run/> |
 | Building your own container image | `day1/1_containers/README.md`, extra C, and the `Dockerfile` | <https://docs.docker.com/build/> |
-| More channel operators: `collect`, `join`, `groupTuple` | handbook §2.2, TODOs 3–4; `help/pipeline/main.nf` | <https://www.nextflow.io/docs/latest/reference/operator.html> |
+| More channel operators: `collect`, `join`, `groupTuple` | handbook section 2.2, TODOs 3–4; `help/pipeline/main.nf` | <https://www.nextflow.io/docs/latest/reference/operator.html> |
 | Moving settings into a config file | `day1/2_nextflow_basics/README.md`, the optional extra | <https://www.nextflow.io/docs/latest/config.html> |
 | Labels, resource limits and retries | `help/pipeline/conf/base.config` | <https://www.nextflow.io/docs/latest/reference/process.html> |
 | Where results are saved (`publish:` and `output {}`) | `help/pipeline/main.nf`, end of the file | <https://www.nextflow.io/docs/latest/workflow.html> |
@@ -429,7 +493,7 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | Run reports: timeline, trace, execution report | `results/pipeline_info/` after any run | <https://www.nextflow.io/docs/latest/reports.html> |
 | Testing a pipeline | capstone extension E5 (`day2/2_capstone/extensions.md`) | <https://www.nf-test.com> |
 | A full, free Nextflow course | – | <https://training.nextflow.io> (start with *Hello Nextflow*) |
-| git, and sharing code on GitHub or GitLab | §6 above | <https://git-scm.com/book> (chapters 1–2) |
+| git, and sharing code on GitHub or GitLab | Section 6 above | <https://git-scm.com/book> (chapters 1–2) |
 
 ---
 

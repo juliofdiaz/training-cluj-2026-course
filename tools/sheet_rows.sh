@@ -14,7 +14,7 @@ RES=${2:-results}
 MLST=$RES/typing/mlst_summary.tsv
 AMR=$RES/amr/amr_summary.tsv
 for f in "$MLST" "$AMR"; do
-  [ -s "$f" ] || { echo "Not found: $f. Run this inside ~/course/day1/3_bactflow/, after the full pipeline (Day 1 handbook §4.3)." >&2; exit 1; }
+  [ -s "$f" ] || { echo "Not found: $f. Run this inside ~/course/day1/3_bactflow/, after the full pipeline (Day 1 handbook section 4.3)." >&2; exit 1; }
 done
 
 awk -F'\t' -v OFS='\t' -v name="$NAME" '

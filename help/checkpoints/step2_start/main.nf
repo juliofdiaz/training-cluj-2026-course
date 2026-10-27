@@ -1,7 +1,7 @@
 #!/usr/bin/env nextflow
 /*
  * bactflow — start of step 2: SHOVILL is written but not connected yet.
- * Your job: the three TODO lines below (D1 handbook §3.2).
+ * Your job: the three TODO lines below (D1 handbook section 3.2).
  *
  *   nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet_test.csv
  */

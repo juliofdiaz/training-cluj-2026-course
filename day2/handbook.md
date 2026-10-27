@@ -42,7 +42,7 @@ Afterwards, on <https://nf-co.re/bacass/2.6.1>, **answer**:
 
 **What we're doing:** setting up a community pipeline for our 8 isolates, and checking the setup without running anything. (Running it would take over half an hour: checking it is the skill.)
 
-**1. Make bacass's samplesheet** from ours. bacass wants tabs and six columns:
+**1. Make bacass’s samplesheet from ours.** bacass wants tabs and six columns:
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -53,7 +53,7 @@ head -3 bacass_samplesheet.tsv
 
 You should see a header line, then one line per isolate starting with `SA01`.
 
-**2. Write the settings file**, `params.yaml`. Copy the whole block: it writes the file for you.
+**2. Write the settings file, `params.yaml`.** Copy the whole block: it writes the file for you.
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -69,7 +69,7 @@ skip_kraken2:    true
 EOF
 ```
 
-**3. Check it without running it.** `-preview` checks everything and runs nothing:
+**3. Check it with `-preview`: it runs nothing.** It checks the samplesheet, the settings and the containers:
 
 ```bash
 cd ~/course/day2/1_nfcore
@@ -78,7 +78,7 @@ nextflow run nf-core/bacass -r 2.6.1 -profile docker -params-file params.yaml -p
 
 **Done when:** `-preview` finishes without an error.
 
-**4. Break it on purpose.** In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run step 3's command again and read the error: it names the setting and the values it accepts. Then put `short` back.
+**4. Break it on purpose (`shortt`), read the error, fix it.** In `params.yaml`, change `assembly_type: short` to `assembly_type: shortt`. Run step 3's command again and read the error: it names the setting and the values it accepts. Then put `short` back.
 
 **Answer:** what is the difference between a setting in `params.yaml` and a setting in a `-c` config file? Which one does `assembler: unicycler` belong in?
 
@@ -95,7 +95,7 @@ nextflow module search mash            # nf-core's modules, from Nextflow's own 
 
 **What we're doing:** installing an nf-core module into the pipeline you built yesterday, connecting it, and running it. Only the new step runs; everything from yesterday is reused.
 
-**1. Install it.** One command; it adds the folder `modules/nf-core/mash/screen/` and changes nothing else.
+**1. Install the module: `nextflow module install nf-core/mash/screen`.** One command; it adds the folder `modules/nf-core/mash/screen/` and changes nothing else.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -103,7 +103,7 @@ nextflow module install nf-core/mash/screen
 ls modules/nf-core/mash/screen/
 ```
 
-**2. Read it.** Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs? What does it output? Where do Mash's own options come from? (Hint: `task.ext.args`.)
+**2. Read it: its inputs, its output, `task.ext.args`.** Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs? What does it output? Where do Mash's own options come from? (Hint: `task.ext.args`.)
 
 **3. Connect it: four places in `main.nf`.**
 
@@ -125,7 +125,7 @@ The first input is your trimmed reads, `[meta, reads]`: the same shape you built
 
 `-w` keeps one best genome per group of near-identical genomes; `-i 0.9` hides weak matches. The module never hard-codes these: your config supplies them. Every nf-core module works this way.
 
-**5. Run it on your 8 isolates.**
+**5. Run it on your 8 isolates with `-resume`, then print the species lines.**
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -165,30 +165,55 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 
 ### 6.2 Check your access (11:25)
 
-**What we're doing:** checking your course machine can use the course's AWS account. There is nothing to sign in to: the machine has a role that may use the course bucket and queue, and nothing else. Your four settings are already saved in `~/.course_env`.
+**What we're doing:** checking your course machine can use the course's AWS account. There is nothing to sign in to: the machine has a role that may use the course bucket and queue, and nothing else.
+
+**1. Look at your four saved settings: `cat ~/.course_env`.**
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
-cat ~/.course_env                             # COURSE_USER, COURSE_BUCKET, COURSE_QUEUE, AWS_REGION
-bash ~/course/tools/check_vm.sh --day2       # the last line should say Ready.
-aws sts get-caller-identity                   # who AWS thinks you are
+cat ~/.course_env
+```
+
+You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. `COURSE_USER` is your own folder in the shared bucket.
+
+**2. Run the Day 2 check: `bash ~/course/tools/check_vm.sh --day2`.**
+
+```bash
+bash ~/course/tools/check_vm.sh --day2
+```
+
+You should see `Ready.` on the last line.
+
+**3. Ask AWS who you are: `aws sts get-caller-identity`.**
+
+```bash
+aws sts get-caller-identity
+```
+
+You should see an `Arn` line naming the course machines' role.
+
+**4. List the course reads in the bucket.**
+
+```bash
 aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 ```
 
 **Done when:** the check's last line says `Ready.`, and `aws s3 ls` lists the reads.
 
-`COURSE_USER` is your own folder in the shared bucket. **Never** paste access keys into a file or a chat.
+**Never** paste access keys into a file or a chat.
 
-### 6.3 Read the cloud settings (11:40, the instructor demonstrates first)
+### 6.3 Run bactflow on AWS Batch (11:40, the instructor demonstrates first)
 
-**What we're doing:** checking that your pipeline has the cloud settings. Only the profile changes; the code does not.
+**What we're doing:** running your pipeline, species check included, on 20 isolates in the cloud. Only the profile changes; the code does not.
+
+**1. Check the cloud settings: the `nextflow config` line.**
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|region'
 ```
 
-**Done when:** the output shows `executor = 'awsbatch'` and a `workDir` ending in your course ID.
+You should see `executor = 'awsbatch'` and a `workDir` ending in your course ID. **Answer:** which files in your pipeline did you have to change to run in the cloud?
 
 Stuck? `Unknown configuration profile: 'awsbatch'` means your `conf/awsbatch.config` is missing. Copy the course's config files (this replaces your `nextflow.config`, species check included), then run the `nextflow config` line again:
 
@@ -197,13 +222,9 @@ cd ~/course/day1/3_bactflow
 cp -r ~/course/help/checkpoints/step4/{nextflow.config,conf} .
 ```
 
-**Answer:** which files in your pipeline did you have to change to run in the cloud?
+**2. Write down your prediction: 20 isolates in the cloud, longer than 8 on your laptop?** Yesterday your machine needed how many minutes for 8 isolates (your answer from Day 1 section 3.3)? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
 
-### 6.4 Run bactflow on AWS Batch (11:48)
-
-**What we're doing:** running your pipeline, species check included, on 20 isolates in the cloud, changing only the profile.
-
-**Answer before you press enter:** yesterday your machine needed how many minutes for 8 isolates (your answer from Day 1 §3.3)? The cloud now runs **20** (SA01–SA20). Will it take longer, or about the same?
+**3. Create `run_aws.sh` and run it. Leave this terminal running.** Copy the whole block: it writes the script, then runs it.
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
@@ -217,67 +238,87 @@ EOF
 bash run_aws.sh
 ```
 
-**Done when:** your terminal shows `awsbatch` and a FASTP line counting `of 20`. You don't need to wait for the end. **Leave this terminal running**: it is your run. If you need a terminal, open a new one (VS Code: *Terminal → New Terminal*).
+You should see `executor > awsbatch`, then a FASTP line counting `of 20`. This terminal is your run: if you need a terminal, open a new one (VS Code: *Terminal → New Terminal*).
 
-While it runs, watch the instructor's screen: the jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appear in EC2 by themselves. **Answer:** why do the first jobs wait in `RUNNABLE`?
+**4. Watch the instructor’s screen: jobs, then machines, appear.** The jobs go `SUBMITTED → RUNNABLE → STARTING → RUNNING`, and machines appear in EC2 by themselves. **Answer:** why do the first jobs wait in `RUNNABLE`?
+
+**Done when:** your terminal shows `awsbatch` and a FASTP line counting `of 20`. You don't need to wait for the end.
 
 If the run stops or fails, fix the cause and run `bash run_aws.sh` again from the same folder. `-resume` reuses every finished task, so you don't pay for them twice.
 
-### 6.5 While it runs: look inside the cloud (12:05)
+### 6.4 While it runs: look inside the cloud (12:05)
 
-**What we're doing:** finding where the cloud keeps your run: its work folders in S3, and each task's Batch job. In a **second terminal** (VS Code: *Terminal → New Terminal*), so the run keeps going in the first:
+**What we're doing:** finding where the cloud keeps your run: its work folders in S3, and each task's Batch job.
+
+**1. Open a second terminal. Leave your run going in the first.** VS Code: *Terminal → New Terminal*.
+
+**2. Look at your work folders in S3, and at your run.**
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head        # one folder per task, now in S3
 nextflow log | tail -1                                      # your run: STATUS is - while it goes
-aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/      # one .screen file per isolate, as they finish
 ```
 
-**Done when:** you have seen your work folders in S3, and you know how many of your 20 isolates are screened. **Answer:** how many `.screen` files are in your cloud `species/` folder so far? The run is finished when there are 20.
+**3. Count the `.screen` files in your cloud `species/` folder: 20 when the run is done.**
+
+```bash
+cd ~/course/day1/3_bactflow
+aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/
+```
+
+**Done when:** you have seen your work folders in S3, and you know how many of your 20 isolates are screened.
 
 (The instructor shows one of your jobs and its log in the console on the projector. `nextflow log last` with `-f` doesn't work while the run is going: the run keeps its records locked until it ends.)
 
 **Before lunch:** if the run is still going, leave your laptop open, or simply run `bash run_aws.sh` again after lunch: `-resume` reuses every finished task.
 
-### 6.6 After lunch: did your cloud run finish? (13:30)
+### 6.5 After lunch: did your cloud run finish? (13:30)
 
 **What we're doing:** checking that your cloud run finished, and restarting it if it didn't.
+
+**1. Check your last run and count your species files.**
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 nextflow log | tail -1                        # STATUS of your last run: OK, ERR, or - (not finished)
-pgrep -f 'one.jar run'                        # prints a number while a run is still going
 aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/ | wc -l     # 20 when every isolate is screened
 ```
 
-**OK and 20?** Go on to §6.7.
+**OK and 20?** You're done: go on to section 6.6.
 
-**`-` and `pgrep` prints a number?** Still running: go on to §6.7 and check again at 14:00.
+**2. STATUS `-`? `pgrep -f 'one.jar run'`: a number means it is still running.**
 
-**ERR, or `-` while `pgrep` prints nothing?** The run stopped (for example when your laptop closed). Run it again in the same folder: only the unfinished tasks run.
+```bash
+pgrep -f 'one.jar run'
+```
+
+A number? Still running: go on to section 6.6 and check again at 14:00. Nothing? The run stopped: step 3.
+
+**3. ERR, or `-` with nothing running? Run `bash run_aws.sh` again.** The run stopped (for example when your laptop closed). Run it again in the same folder: only the unfinished tasks run.
 
 ```bash
 cd ~/course/day1/3_bactflow
 bash run_aws.sh
 ```
 
-Still failing at 13:40? Go on to §6.7 with what you have, and raise your hand. The capstone also works from your laptop results (§7).
+**Done when:** your last run says `OK`, or a restarted run is going.
 
-### 6.7 Compare laptop and cloud (13:40)
+Still failing at 13:40? Go on to section 6.6 with what you have, and raise your hand. The capstone also works from your laptop results (section 7).
+
+### 6.6 Compare laptop and cloud (13:40)
 
 **What we're doing:** checking that the cloud gave the same answers as your course machine, and comparing how long each took.
+
+**1. Download your cloud results and compare them with your laptop’s.**
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 aws s3 sync $COURSE_BUCKET/results/${COURSE_USER:?}/ results_aws/
 diff results/pipeline_info/software_versions.tsv results_aws/pipeline_info/software_versions.tsv && echo "identical"
-nextflow log                       # DURATION column: wall-clock time of each run
 ```
 
-In `nextflow log`, compare two rows: yesterday's run from about 14:30 (see its TIMESTAMP; it assembled 6 of the 8, because SA01 and SA02 were already done) and today's run with `-profile awsbatch`. **Done when:** the diff prints `identical`, and the table below is in your notes file.
-
-Cloud run still going? Do everything except the `diff` now, and run the `sync` and `diff` lines again at 14:00: `software_versions.tsv` is written when the run ends. Stopped (for example, you closed your laptop over lunch)? Run `bash run_aws.sh` again in this folder: finished tasks are reused.
+You should see `identical`. Cloud run still going? Run these two lines again at 14:00: `software_versions.tsv` is written when the run ends. Stopped (for example, you closed your laptop over lunch)? Run `bash run_aws.sh` again in this folder: finished tasks are reused.
 
 Then look at the cloud's species check for the 8 course isolates:
 
@@ -286,7 +327,16 @@ cd ~/course/day1/3_bactflow
 for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phage results_aws/species/$s.screen | sort -gr | head -3; done
 ```
 
-**Answer**, in your notes file:
+**2. In `nextflow log`, compare two DURATIONs: yesterday’s run from about 14:30, and today’s `-profile awsbatch` run.**
+
+```bash
+cd ~/course/day1/3_bactflow
+nextflow log                       # DURATION column: wall-clock time of each run
+```
+
+Yesterday's run is the one from about 14:30 (see its TIMESTAMP; it assembled 6 of the 8, because SA01 and SA02 were already done).
+
+**3. Fill in the table in `~/course/notes.md`.**
 
 | | Yesterday, course machine | Today, AWS Batch |
 |---|---|---|
@@ -296,6 +346,8 @@ for s in SA01 SA02 SA03 SA04 SA05 SA06 SA07 SA08; do echo "== $s"; grep -vi phag
 | Tool versions | | identical? |
 
 Why was the cloud run not 20 times faster, or 2.5 times slower?
+
+**Done when:** the diff printed `identical`, and the table is in your notes file.
 
 ---
 

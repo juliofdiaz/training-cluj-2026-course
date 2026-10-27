@@ -1,4 +1,4 @@
-# Optional git page (Day 1 handbook §6). Copy this file into your pipeline folder as .gitignore:
+# Optional git page (Day 1 handbook, section 6). Copy this file into your pipeline folder as .gitignore:
 #   cp ~/course/tools/gitignore ~/course/day1/3_bactflow/.gitignore
 
 # Nextflow scratch and logs: large, machine-specific, never commit

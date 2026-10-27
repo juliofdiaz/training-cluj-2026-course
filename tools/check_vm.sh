@@ -67,7 +67,7 @@ elif have apptainer || have singularity; then
   warn "No Docker, but Apptainer/Singularity found" "use -profile apptainer instead of -profile docker in every command"
 else bad "No container engine (Docker or Apptainer)" "ask the VM admins to install Docker"; fi
 
-section "git (only for the optional page, D1 handbook §6)"
+section "git (only for the optional page, D1 handbook section 6)"
 have git && ok "git $(git --version | awk '{print $3}')" || warn "git not found (optional)" "sudo apt-get install -y git"
 
 section "Resources"

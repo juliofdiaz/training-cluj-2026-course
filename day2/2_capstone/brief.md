@@ -30,7 +30,7 @@ ls results_aws/                   # your cloud results, through the shortcut
 |---|---|
 | A. QC triage table (PASS / WARN / FAIL per isolate, with reasons) | bactflow MultiQC (fastp: bases, read GC, read length; QUAST), `qc/quast/report.tsv`, **`species/<isolate>.screen`** (Mash) |
 | B. Typing & AMR summary for PASS isolates | `typing/mlst_summary.tsv`, `amr/amr_summary.tsv` |
-| C. Reproducibility statement | Exact commands, pipeline version, Nextflow version, `software_versions.tsv` (Mash is in it now), the species database you used, samplesheet checksums (`MD5SUMS`) |
+| C. Reproducibility statement | Exact commands, pipeline version, Nextflow version, `software_versions.tsv` (Mash is in it now), the species database you used, read checksums (`~/course/data/reads/MD5SUMS`) |
 | *Optional:* one extension from `extensions.md` (in this folder) | Only if you finish A–C early |
 
 ## Your pair's one-minute verdict (15:50, from your seats)

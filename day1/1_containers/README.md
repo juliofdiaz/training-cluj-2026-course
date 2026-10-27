@@ -50,7 +50,7 @@ docker run --rm -u $(id -u):$(id -g) -v ~/course/data/reads:/data -w /data \
   course/seqkit:2.13.0 seqkit stats -a -T SA0*_R1.fastq.gz
 ```
 
-**You should see** a table with one row per read file. **Answer:** compare `sum_len` (total bases) for SA01 and SA07. What do you notice?
+**You should see** a table with one row per read file. **Answer:** compare `sum_len` (total bases) across all 8 samples. What do you notice?
 
 **Stretch:** instead of writing a Dockerfile, ask Seqera Containers (<https://seqera.io/containers/>) for an image with `seqkit=2.13.0`. Compare it with yours: which would you rather cite?
 

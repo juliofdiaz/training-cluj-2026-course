@@ -12,7 +12,7 @@ Welcome! Everything for the two days is in this folder, `~/course`, on your cour
   Every command you type is in the handbook, in order. To see it nicely formatted, right-click the file → *Open Preview*.
 - **Each amber “Your turn” slide matches one handbook section.** Its footer names the section (for example *handbook section 2.2*), and its numbered steps are the handbook's bold steps, in the same words.
 - **Turn on Auto Save:** *File → Auto Save*. Nextflow reads your files from disk: an unsaved change is invisible to it.
-- **Open a terminal:** *Terminal → New Terminal*. Each step in the handbook starts with a `cd` line: run it first, so you are in the right folder.
+- **Open a terminal:** *Terminal → New Terminal*. Most command blocks in the handbook start with a `cd` line: run it first, so you are in the right folder.
 - **Write your answers** in `notes.md` (in this folder). One file for both days.
 - **Stuck?** Read the "Stuck?" box on the slide, then the troubleshooting table at the end of the handbook. Still stuck after 3 minutes? Raise your hand.
 

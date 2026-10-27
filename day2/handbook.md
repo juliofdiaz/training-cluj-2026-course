@@ -44,10 +44,10 @@ Three folders today: **`~/course/day2/1_nfcore/`** for the community pipeline (b
 
 ---
 
+**Same pairs, same machine as yesterday.** One drives, one navigates with the handbook open; swap roles at every new section, as yesterday.
+
 <a id="h-5"></a>
 
-
-**Same pairs, same machine as yesterday.** One drives, one navigates with the handbook open; swap roles at every new section, as yesterday.
 
 ## 5. nf-core: use a community pipeline, then borrow one of its modules (S6, 09:15–10:30)
 
@@ -89,7 +89,7 @@ awk -F, 'NR==1 {print "ID\tR1\tR2\tLongFastQ\tFast5\tGenomeSize"; next}
 head -3 bacass_samplesheet.tsv
 ```
 
-You should see a header line, then one line per isolate starting with `SA01`.
+You should see a header line, then the lines for SA01 and SA02.
 
 **2. Write the settings file, `params.yaml`.**
 
@@ -115,16 +115,16 @@ EOF
 
 **Why:** You find a mistake in seconds, instead of half an hour into a run.
 
-It checks the samplesheet, the settings and the containers:
+It checks the samplesheet and the settings, without running any task:
 
 ```bash
 cd ~/course/day2/1_nfcore
 nextflow run nf-core/bacass -r 2.6.1 -profile docker -params-file params.yaml -preview
 ```
 
-**Done when:** `-preview` finishes without an error.
-
 **4. Break it on purpose (`shortt`), read the error, fix it.**
+
+**Done when:** `-preview` finishes without an error, with `short` back in place.
 
 **Why:** nf-core pipelines check their settings before running. Reading one such error now makes the next one easy to fix.
 
@@ -204,7 +204,7 @@ Open `modules/nf-core/mash/screen/main.nf`. **Answer:** what are its two inputs?
 | Below the last `include` line (the MULTIQC one) | `include { MASH_SCREEN } from './modules/nf-core/mash/screen'` |
 | In `main:`, after the `SHOVILL(...)` line | `MASH_SCREEN(FASTP.out.reads, channel.value([[id: 'refseq'], file(params.mash_db, checkIfExists: true)]))` |
 | In `publish:`, with the other lines | `species = MASH_SCREEN.out.screen` |
-| In `output { }`, like `mlst` | `species { path 'species' }` (three lines) |
+| In `output { }`, like `mlst` | three lines: `species {`, then `path 'species'`, then `}` |
 
 The first input is your trimmed reads, `[meta, reads]`: the same shape you built yesterday. The second is the reference database, which the module also expects as `[meta, file]`.
 
@@ -285,6 +285,7 @@ You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. 
 **Why:** A missing permission or setting shows up now, not halfway through the cloud run.
 
 ```bash
+cd ~/course/day1/3_bactflow
 bash ~/course/tools/check_vm.sh --day2
 ```
 
@@ -295,6 +296,7 @@ You should see `Ready.` on the last line.
 **Why:** It confirms your machine may use the course's AWS account, with no password or key on it.
 
 ```bash
+cd ~/course/day1/3_bactflow
 aws sts get-caller-identity
 ```
 
@@ -305,6 +307,7 @@ You should see an `Arn` line naming the course machines' role.
 **Why:** The cloud run reads its data from the bucket, not from your machine.
 
 ```bash
+cd ~/course/day1/3_bactflow
 aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 ```
 
@@ -329,7 +332,7 @@ nextflow config -profile awsbatch | grep -E 'executor|queue|workDir|outputDir|re
 
 You should see `executor = 'awsbatch'` and a `workDir` ending in your course ID. **Answer:** which files in your pipeline did you have to change to run in the cloud?
 
-Stuck? `Unknown configuration profile: 'awsbatch'` means your `conf/awsbatch.config` is missing. Copy the course's config files (this replaces your `nextflow.config`, species check included), then run the `nextflow config` line again:
+Stuck? `Unknown configuration profile: 'awsbatch'` means your `nextflow.config` has no `awsbatch` profile (the copy in Day 1 section 4.4, step 1, was skipped). Copy the course's config files (this replaces your `nextflow.config`, species check included), then run the `nextflow config` line again:
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -386,11 +389,11 @@ If the run stops or fails, fix the cause and run `bash run_aws.sh` again from th
 
 ```bash
 cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
-aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head        # one folder per task, now in S3
+aws s3 ls $COURSE_BUCKET/work/$COURSE_USER/ | head        # folders like 4e/: each holds task folders, like work/4e/546307… yesterday
 nextflow log | tail -1                                      # your run: STATUS is - while it goes
 ```
 
-**3. Count the `.screen` files in your cloud `species/` folder: 20 when the run is done.**
+**3. List the `.screen` files in your cloud `species/` folder: 20 when the run is done.**
 
 **Why:** Each finished isolate adds one file: a progress check that doesn't disturb the run.
 
@@ -426,6 +429,7 @@ aws s3 ls $COURSE_BUCKET/results/$COURSE_USER/species/ | wc -l     # 20 when eve
 **2. STATUS `-`? `pgrep -f 'one.jar run'`: a number means it is still running.**
 
 ```bash
+cd ~/course/day1/3_bactflow
 pgrep -f 'one.jar run'
 ```
 
@@ -482,12 +486,19 @@ Yesterday's run is the one from about 14:30 (see its TIMESTAMP; it assembled 6 o
 
 | | Yesterday, course machine | Today, AWS Batch |
 |---|---|---|
-| Isolates | 8 | 20 |
+| Isolates processed | 6 (FASTP and SHOVILL only) | 20 (whole pipeline) |
 | Wall-clock time | | |
-| CPUs SHOVILL got (`nextflow log last -f name,cpus \| grep SHOVILL \| head -1`, once the run has ended) | 4 | |
+| CPUs SHOVILL got (the command below, once the run has ended) | 4 | |
 | Tool versions | | identical? |
 
-Why was the cloud run not 20 times faster, or 2.5 times slower?
+To find the CPUs SHOVILL got today, once the cloud run has ended:
+
+```bash
+cd ~/course/day1/3_bactflow
+nextflow log last -f name,cpus | grep SHOVILL | head -1
+```
+
+20 isolates on many machines took about as long as 6 on one. Why wasn't it much faster, and why wasn't it 3 times slower?
 
 **Done when:** the diff printed `identical`, and the table is in your notes file.
 

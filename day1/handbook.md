@@ -71,9 +71,13 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-**1. Find your names on the address list on the screen, and connect to that address.** There is one machine per pair: connect both laptops to it, the driver's to type and the navigator's to keep this handbook open. The login details are on the screen too. Then, in VS Code, turn on **File → Auto Save** (a tick appears), so Nextflow always runs what you see in the editor. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
+**1. Find your names on the address list on the screen, and connect to that address.** There is one machine per pair: connect both laptops to it, the driver's to type and the navigator's to keep this handbook open. The login details are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
 
-**2. Run the machine check: `bash ~/course/tools/check_vm.sh`.**
+**2. Turn on Auto Save: *File → Auto Save* in VS Code.**
+
+**Why:** Nextflow reads your files from disk. With Auto Save on (a tick appears next to it), what you see in the editor is always what runs.
+
+**3. Run the machine check: `bash ~/course/tools/check_vm.sh`.**
 
 **Why:** It confirms the tools, containers and reads are all there, so a problem shows up now, not in the middle of an exercise.
 
@@ -83,7 +87,7 @@ bash ~/course/tools/check_vm.sh
 
 You should see one line per check, `[ OK ]` or `[WARN]`, and at the end `Ready.`
 
-**3. A FAIL line? Try the fix it prints.** Then run the check again. Still failing? Raise your hand. If the check says Nextflow is too old: `export NXF_VER=26.04.9`, add the same line to `~/.bashrc`, and run the check again.
+**4. A FAIL line? Try the fix it prints.** Then run the check again. Still failing? Raise your hand. If the check says Nextflow is too old: `export NXF_VER=26.04.9`, add the same line to `~/.bashrc`, and run the check again.
 
 **Done when:** the last line says `Ready.` (`WARN` lines are fine).
 
@@ -118,7 +122,7 @@ You should see `fastp 1.4.0`.
 
 **Why:** A container sees nothing of your machine unless you share it. `-v` is how you hand it the reads and get the reports back: every pipeline task does exactly this.
 
-The container sees only the folders you share with `-v`: the reads (as `/data`) and this folder (as `/work`), where the reports go.
+The container sees only the folders you share with `-v`: the reads (as `/data`) and this folder (as `/work`), where the reports go. `-w /work` makes `/work` the folder fastp runs in, and `-u $(id -u):$(id -g)` makes the files it writes yours, not root's (extra A in this folder's README).
 
 ```bash
 cd ~/course/day1/1_containers
@@ -278,7 +282,7 @@ cd ~/course/day1/2_nextflow_basics
 nextflow run 02_channels.nf
 ```
 
-You should see 8 `row:` lines (one per samplesheet row), then 8 lines like `SA01 -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`. The order changes from run to run: that's normal.
+You should see 8 `row:` lines (one per samplesheet row) and 8 lines like `SA01 -> [SA01_R1.fastq.gz, SA01_R2.fastq.gz]`, mixed together and in any order: that's normal.
 
 **2. TODO 1: give each sample a group, print `${meta}`, run it again.**
 
@@ -340,6 +344,8 @@ Open `03_first_process.nf` in VS Code and read it.
 cd ~/course/day1/2_nextflow_basics
 nextflow run 03_first_process.nf -with-docker
 ```
+
+`-with-docker` runs each task in the container named in its process. This afternoon a profile, `-profile docker`, does the same.
 
 You should see 2 FASTP tasks (SA01 and SA02), then 2 lines listing each sample's trimmed reads.
 
@@ -437,17 +443,19 @@ nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet_tes
 ls results/qc/fastp/
 ```
 
-You should see a report for SA01 and one for SA02. From now on, **always run from inside `~/course/day1/3_bactflow/`**: `-resume` looks for your work in the folder you launch from.
+You should see `SA01.fastp.html`, `SA01.fastp.json`, `SA02.fastp.html` and `SA02.fastp.json`. From now on, **always run from inside `~/course/day1/3_bactflow/`**: `-resume` looks for your work in the folder you launch from.
 
 **3. Answer the four questions by reading `main.nf` and `nextflow.config`:**
 
 **Why:** These four parts (the input, a process, its container, a profile) are in every Nextflow pipeline, nf-core's included.
 - Which lines turn the samplesheet into `[meta, reads]`? (You wrote the same thing this morning.)
-- What goes into FASTP, and what are its four outputs?
+- What goes into FASTP, and what are its outputs? (The last output line, with `topic: versions`, records fastp's version: we come back to it at 16:05.)
 - Which container does FASTP use, and where is that written?
 - What does `-profile docker` switch on? Find it in `nextflow.config`.
 
 **Done when:** `ls results/qc/fastp/` shows reports for SA01 and SA02, and you have four answers.
+
+Finished early? Find the line in `main.nf` that makes Nextflow stop at once if a FASTQ file is missing.
 
 <a id="h-3-2"></a>
 
@@ -489,7 +497,13 @@ cp -r ~/course/help/checkpoints/step2_start/. .
 **Why:** TODO 1 sends FASTP's trimmed reads into SHOVILL: that one line is what joins two steps into a pipeline. TODOs 2 and 3 tell Nextflow which results to keep, and in which folder.
 - TODO 1: run SHOVILL on FASTP's trimmed reads: `SHOVILL(FASTP.out.reads)`
 - TODO 2: publish its contigs: `assemblies = SHOVILL.out.contigs`
-- TODO 3: give them a folder, like `fastp` above it: `assemblies { path 'assemblies' }` (three lines)
+- TODO 3: give them a folder, like `fastp` above it, in three lines:
+
+  ```groovy
+      assemblies {
+          path 'assemblies'
+      }
+  ```
 
 **3. Run it on the test samples with `-resume`: FASTP is cached.**
 
@@ -506,6 +520,8 @@ You should see FASTP `cached: 2`, SHOVILL `2 of 2`, then a contig count for SA01
 **Done when:** `grep` prints a contig count for SA01 and SA02.
 
 **Answer:** FASTP said `cached`. Why did it not run again?
+
+Finished early? In `nextflow.config`, find `genome_size`. How would you change it for one run without editing the file?
 
 Stuck? `cp -r ~/course/help/checkpoints/step2/. .` (inside `~/course/day1/3_bactflow`) is the finished step.
 
@@ -593,6 +609,8 @@ mkdir -p modules
 code modules/mlst.nf
 ```
 
+(`code` works in the VS Code terminal. From a plain `ssh` terminal, create the file in VS Code instead: *File → New File*, then save it as `modules/mlst.nf`.)
+
 Paste this skeleton into the new file. Its name, tag and label are already filled in:
 
 ```groovy
@@ -666,6 +684,8 @@ You should see MLST `8 of 8`, then the **Outputs:** list Nextflow prints at the 
 **Done when:** MLST shows `8 of 8`, FASTP and SHOVILL show `cached: 8`, and `cat` prints one line per sample.
 
 **Answer:** how long did the new step take, compared with the assemblies?
+
+Finished early? Change the MLST container tag to one that doesn't exist, run with `-resume`, and read the error. Then fix it.
 
 Stuck? `fasta` is not defined: the `input:` line must say `path(fasta)`. Otherwise compare your module with `~/course/help/pipeline/modules/mlst.nf` (it has one extra output line, which records MLST's version). No `results/typing/`? Check that `publish:` and `output {}` both use the name `mlst`.
 
@@ -755,6 +775,8 @@ You should see FASTP, SHOVILL and MLST `cached: 8`, MULTIQC `1 of 1`, then `mult
 
 **Answer:** MLST ran 8 times and MULTIQC once. Which part of your code made the difference?
 
+Finished early? Find `.collect()` in `~/course/help/pipeline/main.nf`: which other step runs once over all samples?
+
 Stuck?
 - MULTIQC ran 8 times: the `.collect()` is missing.
 - FASTP and SHOVILL run again: an `include` line is above the processes. Move both `include` lines just above `workflow {`, then run again.
@@ -795,9 +817,11 @@ You should see FASTP and SHOVILL `cached: 8`; QUAST and ABRICATE run, and MLST a
 
 **Why:** "Finished without errors" doesn't mean "right". The QC report is where you check each sample's quality.
 
-In `~/course/day1/3_bactflow`, open `results/multiqc/multiqc_report.html` (VS Code: right-click → *Open with Live Preview*, or download it).
+In `~/course/day1/3_bactflow`, open `results/multiqc/multiqc_report.html` (VS Code: right-click → *Open with Live Preview*, or download it). You should see a General Statistics table with one row per sample.
 
 **3. Read the two summary tables.**
+
+**Why:** These two tables are what goes into the class spreadsheet: each isolate's sequence type and its resistance genes.
 
 ```bash
 cd ~/course/day1/3_bactflow
@@ -830,7 +854,7 @@ Type both your names, in quotes, for example `"Ana Pop & Ion Ionescu"`. It print
 
 1. Select the 8 lines in the terminal and copy them.
 2. Open the class spreadsheet: **<RESULTS_SHEET_URL>** (the link is also on the board).
-3. Click the cell in column A of the first empty row, once, and paste. The four values go into four columns.
+3. Find the 8 rows that already show your names in column A (the instructors prepared one block of rows per pair). Click column A of the first of them, once, and paste. The four values go into four columns.
 
 Leave other pairs' rows alone. Tomorrow, in the capstone, you add a verdict and a reason to each of your 8 rows.
 
@@ -852,7 +876,6 @@ Not part of the course time, and nothing tomorrow depends on it. git keeps a his
 ```bash
 git config --global user.name  "Your Name"
 git config --global user.email "you@example.org"   # any address: nothing is sent anywhere
-cd ~/course/day1/3_bactflow
 cd ~/course/day1/3_bactflow                        # your pipeline's folder
 git init -b main                                   # start a history in this folder
 cp ~/course/tools/gitignore .gitignore           # keep work/, results/ and reads out of it

@@ -8,7 +8,7 @@ extra_fn_clean_exts:
   - ".fastp"
   - "_trimmed"
 show_analysis_paths: false
-# Show the read length in General Statistics: a contaminating library can differ (capstone)
+# Show the read length in General Statistics
 table_columns_visible:
   fastp:
     before_filtering_read1_mean_length: true

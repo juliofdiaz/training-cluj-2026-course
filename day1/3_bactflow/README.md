@@ -10,4 +10,4 @@ cd ~/course/day1/3_bactflow
 
 `-resume` looks for your earlier work in the folder you launch from.
 
-Fallen behind? Copy the finished version of the step the class is on from `~/course/help/checkpoints/`.
+Fallen behind? The handbook's "Stuck?" line for your section names the file to copy or compare (from `~/course/help/`).

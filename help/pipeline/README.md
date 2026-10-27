@@ -34,7 +34,7 @@ CSV with a header `sample,fastq_1,fastq_2`. Paths can be local, `s3://` or `http
 | `--amr_db` | `ncbi` | ABRicate database (`ncbi`, `card`, `resfinder`, `argannot`, `vfdb`, …) |
 | `--amr_minid` / `--amr_mincov` | `90` / `80` | ABRicate identity and coverage thresholds (%) |
 | `--fastp_args` | `--detect_adapter_for_pe --length_required 50` | Extra fastp options |
-| `--shovill_args` | `--minlen 200` | Extra Shovill options |
+| `--shovill_args` | `'--minlen 200 --kmers 31,45 --noreadcorr --nostitch --nocorr'` (course mode) | Extra Shovill options |
 | `--save_trimmed` | `false` | Publish trimmed reads |
 
 ## Output

@@ -116,7 +116,7 @@ if [ $DAY2 -eq 1 ]; then
   else bad "AWS CLI not found" "https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html"; fi
   # Checked even without the AWS CLI: the cleanup commands delete $COURSE_BUCKET/.../$COURSE_USER/
   if [ -z "${COURSE_USER:-}" ]; then bad "COURSE_USER not set (cloud runs and the cleanup need it)" "source ~/.course_env (tell an instructor if that file is missing)"
-  elif [[ ! "$COURSE_USER" =~ ^[a-z0-9-]+$ ]]; then bad "COURSE_USER='$COURSE_USER' must be lowercase letters, digits or -" "export COURSE_USER=<your-first-name-lowercase>"
+  elif [[ ! "$COURSE_USER" =~ ^[a-z0-9-]+$ ]]; then bad "COURSE_USER='$COURSE_USER' must be lowercase letters, digits or -" "export COURSE_USER=<your pair id, e.g. ana-ion> (it is in ~/.course_env)"
   else ok "COURSE_USER=$COURSE_USER"; fi
 fi
 

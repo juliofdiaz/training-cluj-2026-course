@@ -278,7 +278,7 @@ cd ~/course/day1/3_bactflow                   # your pipeline, from yesterday
 cat ~/.course_env
 ```
 
-You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. `COURSE_USER` is your own folder in the shared bucket.
+You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. `COURSE_USER` is your pair's ID (for example `ana-ion`): the name of your own folders in the shared bucket. Every group's cloud runs go to the same bucket, so yours write only to `work/<your ID>/` and `results/<your ID>/`. That way no two groups overwrite each other, and at the end of the day you delete only your own folders (section 8).
 
 **2. Run the Day 2 check: `bash ~/course/tools/check_vm.sh --day2`.**
 

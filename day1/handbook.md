@@ -175,6 +175,15 @@ nextflow run 01_hello.nf --greeting 'Salut' -resume
 
 **What we're doing:** turning a samplesheet into one item per sample, `[meta, reads]`, the shape every step this afternoon (and every nf-core pipeline) uses.
 
+**What `meta` is.** A small map of `name: value` facts about one sample, which travels with that sample's files through the whole pipeline, like the order ticket that goes with each plate from the kitchen to the table. For SA01, at the end of this section, one item of the channel looks like this:
+
+```
+[ [id:SA01, group:ward_A],  [SA01_R1.fastq.gz, SA01_R2.fastq.gz] ]
+  └─────── meta ────────┘   └───────────── reads ──────────────┘
+```
+
+The files change at every step (trimmed reads, then an assembly, then a typing result), but `meta` stays with them, so every step knows which sample it is working on: `${meta.id}` is how a step names its outputs, `SA01.fastp.json` for example.
+
 Open `02_channels.nf` in VS Code and read it: its Steps A and B are written for you. You change it in one place, marked `TODO 1`, and run it again.
 
 **1. Run `02_channels.nf` as it is.**
@@ -594,4 +603,4 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | **Work directory** | The private folder where one task runs | A cook's station |
 | **`-resume`** | Reuse tasks that already finished | "That dish is already cooked" |
 | **Profile** | A named group of settings (`docker`, `apptainer`) | Which kitchen you cook in |
-| **meta map** | Everything known about a sample, travelling with its files | The order ticket on the plate |
+| **meta map** (`meta`) | A small map of facts about one sample, like `[id:SA01, group:ward_A]`, that travels with its files through every step | The order ticket that goes with each plate |

@@ -18,7 +18,7 @@
   - [6.5 After lunch: did your cloud run finish? (13:30)](#h-6-5)
   - [6.6 Compare laptop and cloud (13:40)](#h-6-6)
 - [7. Capstone: the ward cluster (S8, 14:00–16:25)](#h-7)
-- [8. Wrap-up: clean up, and check your results (16:25, 22 min)](#h-8)
+- [8. Wrap-up: clean up, and check your results (16:25, 27 min)](#h-8)
   - [8.1 Clean up the cloud first](#h-8-1)
   - [8.2 Check the class spreadsheet](#h-8-2)
   - [8.3 Optional: keep your work](#h-8-3)
@@ -525,7 +525,7 @@ Open `brief.md` in VS Code (right-click → *Open Preview*), and `report.md` nex
 
 <a id="h-8"></a>
 
-## 8. Wrap-up: clean up, and check your results (16:25, 22 min)
+## 8. Wrap-up: clean up, and check your results (16:25, 27 min)
 
 <a id="h-8-1"></a>
 

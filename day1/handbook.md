@@ -71,7 +71,7 @@ Coffee 10:45 and 15:00 · lunch 12:30–13:30.
 
 **What we're doing:** connecting to your course machine and checking it has everything for the day.
 
-**1. Find your names on the address list on the screen, and connect to that address.** There is one machine per pair: connect both laptops to it, the driver's to type and the navigator's to keep this handbook open. The login details are on the screen too. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
+**1. Find your names on the address list on the screen, and connect to that address.** There is one machine per pair: connect both laptops to it, the driver's to type and the navigator's to keep this handbook open. The login details are on the screen too. Then, in VS Code, turn on **File → Auto Save** (a tick appears), so Nextflow always runs what you see in the editor. In VS Code: install the *Remote - SSH* extension, choose *Remote-SSH: Connect to Host*, and type `<login>@<address>`. Or, in a terminal: `ssh <login>@<address>`.
 
 **2. Run the machine check: `bash ~/course/tools/check_vm.sh`.**
 
@@ -635,7 +635,21 @@ The name in `input:` is the name the command uses: `path(fasta)` is what makes `
 
 **Why:** As with SHOVILL's assemblies in section 3.2, a result is saved only if it is published and given a folder. Otherwise it stays hidden in `work/`.
 
-In the `publish:` block, add `mlst = MLST.out.tsv`. In the `output {}` block, add a folder for it, like `assemblies` above it: `mlst { path 'typing' }` (three lines).
+In the `publish:` block, add:
+
+```groovy
+    mlst = MLST.out.tsv
+```
+
+In the `output {}` block, add these three lines, like `assemblies` above them:
+
+```groovy
+    mlst {
+        path 'typing'
+    }
+```
+
+`mlst` is the name: it must match the name in `publish:`. `'typing'` is the folder, inside `results/`.
 
 **4. Run all 8 samples with `-resume`.**
 
@@ -647,7 +661,7 @@ nextflow run main.nf -profile docker --input ~/course/data/reads/samplesheet.csv
 cat results/typing/*.mlst.tsv
 ```
 
-You should see MLST `8 of 8`, then one line per sample: its name, `saureus` and its sequence type (ST).
+You should see MLST `8 of 8`, then the **Outputs:** list Nextflow prints at the end of every run (it shows where each result went: `typing/SA01.mlst.tsv`, …). Then `cat` prints one line per sample: its name, `saureus` and its sequence type (ST), or `-` where MLST could not decide one.
 
 **Done when:** MLST shows `8 of 8`, FASTP and SHOVILL show `cached: 8`, and `cat` prints one line per sample.
 
@@ -711,7 +725,19 @@ The second input is the settings file you copied in step 1.
 
 **Why:** As for SHOVILL and MLST: only published results reach `results/`.
 
-In `publish:`, add `multiqc = MULTIQC.out.report`. In `output {}`, add `multiqc { path 'multiqc' }` (three lines, like `mlst`).
+In `publish:`, add:
+
+```groovy
+    multiqc = MULTIQC.out.report
+```
+
+In `output {}`, add three lines, like `mlst`:
+
+```groovy
+    multiqc {
+        path 'multiqc'
+    }
+```
 
 **5. Run all 8 samples with `-resume`.**
 
@@ -729,7 +755,10 @@ You should see FASTP, SHOVILL and MLST `cached: 8`, MULTIQC `1 of 1`, then `mult
 
 **Answer:** MLST ran 8 times and MULTIQC once. Which part of your code made the difference?
 
-Stuck? MULTIQC ran 8 times: the `.collect()` is missing. Anything else: section 4.4, step 1, copies the finished pipeline, MultiQC included.
+Stuck?
+- MULTIQC ran 8 times: the `.collect()` is missing.
+- FASTP and SHOVILL run again: an `include` line is above the processes. Move both `include` lines just above `workflow {`, then run again.
+- Anything else: section 4.4, step 1, copies the finished pipeline, MultiQC included.
 
 <a id="h-4-4"></a>
 
@@ -884,6 +913,9 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | A task failed | – | Open its work folder (printed in the error), then read `.command.err` and `.command.sh` |
 | Output "missing" | The `output:` name doesn't match what the script wrote | `ls` the work folder and compare names |
 | `-resume` re-runs everything | Different launch folder, or you edited the process code | Launch from `~/course/day1/3_bactflow/`. Compare your module with `~/course/help/pipeline/modules/`. |
+| `-resume` re-runs FASTP and SHOVILL after you added an `include` | The `include` line is above the processes in `main.nf` | Move the `include` lines just above `workflow {` |
+| An error about a setting or a line you just changed, as if your edit wasn't there | The file isn't saved (a dot on its tab in VS Code) | Save it (Cmd/Ctrl+S), and turn on *File → Auto Save* |
+| Results in a different folder than the handbook says | The name in `publish:` and the folder in `output {}` are mixed up | `mlst = …` in `publish:`, then `mlst { path 'typing' }` in `output {}` |
 | Shovill `exit 137` | Shovill asked for more memory than your machine has, so the system stopped it | Set `process_high` memory to `6.GB` in `conf/base.config` (so it fits), then run again with `-resume` |
 | Pasted rows land in one cell of the spreadsheet | You double-clicked into the cell before pasting | Undo, click the cell once, and paste again |
 

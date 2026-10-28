@@ -1,6 +1,6 @@
 process SHOVILL {
     tag "${meta.id}"
-    label 'process_high'
+    label 'process_medium'
     container 'quay.io/biocontainers/shovill:1.4.2--hdfd78af_1'
 
     input:

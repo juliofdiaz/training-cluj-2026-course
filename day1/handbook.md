@@ -939,7 +939,7 @@ We left these out of class time on purpose: they are useful, but not needed to b
 | `-resume` re-runs FASTP and SHOVILL after you added an `include` | The `include` line is above the processes in `main.nf` | Move the `include` lines just above `workflow {` |
 | An error about a setting or a line you just changed, as if your edit wasn't there | The file isn't saved (a dot on its tab in VS Code) | Save it (Cmd/Ctrl+S), and turn on *File → Auto Save* |
 | Results in a different folder than the handbook says | The name in `publish:` and the folder in `output {}` are mixed up | `mlst = …` in `publish:`, then `mlst { path 'typing' }` in `output {}` |
-| Shovill `exit 137` | Shovill asked for more memory than your machine has, so the system stopped it | Set `process_high` memory to `6.GB` in `conf/base.config` (so it fits), then run again with `-resume` |
+| Shovill `exit 137` | Shovill asked for more memory than your machine has, so the system stopped it | Set `process_medium` memory to `6.GB` in `conf/base.config` (so it fits), then run again with `-resume` |
 | Pasted rows land in one cell of the spreadsheet | You double-clicked into the cell before pasting | Undo, click the cell once, and paste again |
 
 <a id="h-glossary"></a>

@@ -12,7 +12,7 @@
   - [5.4 Add the species check to your pipeline (09:55)](#h-5-4)
 - [6. Run it in the cloud (S7, 10:45–12:30, and 13:30–14:00)](#h-6)
   - [6.1 AWS in 40 minutes (10:45, the instructor presents and demonstrates)](#h-6-1)
-  - [6.2 Check your access (11:25)](#h-6-2)
+  - [6.2 Sign in to AWS with your key file (11:25)](#h-6-2)
   - [6.3 Run bactflow on AWS Batch (11:40, the instructor demonstrates first)](#h-6-3)
   - [6.4 While it runs: look inside the cloud (12:05)](#h-6-4)
   - [6.5 After lunch: did your cloud run finish? (13:30)](#h-6-5)
@@ -254,7 +254,7 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 | AWS word | Think of it as | In this course |
 |---|---|---|
 | Region | The city where the data centre is | eu-west-2, London |
-| IAM | Keys and badges: who may open which door | Your course machine's role |
+| IAM | Keys and badges: who may open which door | Your pair's AWS user, and its access key |
 | S3 | A warehouse of labelled boxes | Reads, work folders, results |
 | EC2 | Workbenches rented by the second | Batch rents them for you |
 | Spot | Standby benches: cheaper, can be taken back | Our only queue |
@@ -265,9 +265,9 @@ Stuck? `cp -r ~/course/help/checkpoints/step4/. .` (inside `~/course/day1/3_bact
 
 <a id="h-6-2"></a>
 
-### 6.2 Check your access (11:25)
+### 6.2 Sign in to AWS with your key file (11:25)
 
-**What we're doing:** checking your course machine can use the course's AWS account. There is nothing to sign in to: the machine has a role that may use the course bucket and queue, and nothing else.
+**What we're doing:** signing your course machine in to the course's AWS account, the way you will on your own: with an **access key** that an AWS administrator gives you as a small file. Your machine has no AWS access of its own until you do.
 
 **1. Look at your four saved settings: `cat ~/.course_env`.**
 
@@ -280,40 +280,77 @@ cat ~/.course_env
 
 You should see `COURSE_USER`, `COURSE_BUCKET`, `COURSE_QUEUE` and `AWS_REGION`. `COURSE_USER` is your pair's ID (for example `ana-ion`): the name of your own folders in the shared bucket. Every group's cloud runs go to the same bucket, so yours write only to `work/<your ID>/` and `results/<your ID>/`. That way no two groups overwrite each other, and at the end of the day you delete only your own folders (section 8).
 
-**2. Run the Day 2 check: `bash ~/course/tools/check_vm.sh --day2`.**
+**2. Ask AWS who you are, before signing in: `aws sts get-caller-identity`.**
 
-**Why:** A missing permission or setting shows up now, not halfway through the cloud run.
+**Why:** Predict first: will it work? This is where everyone starts on a new machine.
+
+```bash
+aws sts get-caller-identity
+```
+
+You should see `Unable to locate credentials`. The machine has no key yet, so AWS doesn't know who is asking.
+
+**3. Look at your key file.**
+
+**Why:** This is what an AWS administrator gives you, or what the AWS console lets you download when you make a key yourself.
+
+```bash
+ls ~/*_accessKeys.csv
+cat ~/*_accessKeys.csv
+```
+
+You should see one file named after your pair, with two values: an **access key ID** (starts with `AKIA`; like a user name) and a **secret access key** (like a password). Together they let anyone who has them use AWS as your pair, and the course pays.
+
+**4. Sign in: `aws configure`.**
+
+**Why:** It saves the key where every AWS tool looks for it, Nextflow included.
+
+```bash
+aws configure
+```
+
+It asks four questions. Copy each value from the file you just printed, and paste it:
+
+| Question | Answer |
+|---|---|
+| `AWS Access Key ID` | the first value (`AKIA…`) |
+| `AWS Secret Access Key` | the second value |
+| `Default region name` | `eu-west-2` |
+| `Default output format` | `json` |
+
+**5. See where it went, and who you are now.**
+
+```bash
+ls -l ~/.aws/
+cat ~/.aws/config
+aws sts get-caller-identity
+```
+
+You should see two files: `config` (region and output format) and `credentials` (the key, readable only by you: `-rw-------`). This time `get-caller-identity` prints an `Arn` ending in `user/course/course-<your ID>`: your pair's AWS user.
+
+**6. Delete the key file: `rm ~/*_accessKeys.csv`.**
+
+**Why:** The key now lives in `~/.aws/credentials`. A second copy is a second chance for it to leak.
+
+```bash
+rm ~/*_accessKeys.csv
+```
+
+**7. Run the Day 2 check, and list the course reads in the bucket.**
+
+**Why:** A missing permission or setting shows up now, not halfway through the cloud run. The cloud run reads its data from the bucket, not from your machine.
 
 ```bash
 cd ~/course/day1/3_bactflow
 bash ~/course/tools/check_vm.sh --day2
-```
-
-You should see `Ready.` on the last line.
-
-**3. Ask AWS who you are: `aws sts get-caller-identity`.**
-
-**Why:** It confirms your machine may use the course's AWS account, with no password or key on it.
-
-```bash
-cd ~/course/day1/3_bactflow
-aws sts get-caller-identity
-```
-
-You should see an `Arn` line naming the course machines' role.
-
-**4. List the course reads in the bucket.**
-
-**Why:** The cloud run reads its data from the bucket, not from your machine.
-
-```bash
-cd ~/course/day1/3_bactflow
 aws s3 ls $COURSE_BUCKET/data/reads/ --human-readable
 ```
 
-**Done when:** the check's last line says `Ready.`, and `aws s3 ls` lists the reads.
+**Done when:** `get-caller-identity` names your pair's user, the key file is gone, the check's last line says `Ready.`, and `aws s3 ls` lists the reads.
 
-**Never** paste access keys into a file or a chat.
+**Answer:** Nextflow never asks for your key. How does it find it?
+
+**Keep keys safe.** Never commit a key, mail it or paste it into a chat or an AI tool. The course's `.gitignore` already keeps `.aws/` and `*accessKeys.csv` out of git. If a key leaks, tell whoever gave it to you at once: they delete it, and make you a new one. At your own institution, you may sign in with single sign-on instead (`aws configure sso`), which gives keys that expire by themselves. Your course key is deleted tonight.
 
 <a id="h-6-3"></a>
 
@@ -545,7 +582,14 @@ aws s3 rm $COURSE_BUCKET/results/${COURSE_USER:?}/ --recursive
 - `echo` gives an error (`COURSE_USER: parameter null or not set`)? Run `source ~/.course_env` and start again. `${COURSE_USER:?}` stops a command when your ID is missing, instead of deleting everyone's folder.
 - `pgrep` prints a number? A run is still going: wait a few minutes and try again, or raise your hand.
 
-**Done when:** `aws s3 ls $COURSE_BUCKET/work/` no longer lists your ID.
+Check that your folders are gone: `aws s3 ls $COURSE_BUCKET/work/` no longer lists your ID. **Last,** sign this machine out of AWS (after this, AWS no longer answers you):
+
+```bash
+rm -rf ~/.aws
+aws sts get-caller-identity                   # Unable to locate credentials: signed out
+```
+
+**Done when:** your ID is no longer under `work/`, and `get-caller-identity` says `Unable to locate credentials` again.
 
 <a id="h-8-2"></a>
 
@@ -564,6 +608,7 @@ The course machines are switched off after the course. To keep your work, in VS 
 ### Final self-check
 
 - [ ] `aws s3 ls $COURSE_BUCKET/work/` no longer lists your ID
+- [ ] `~/.aws` deleted: this machine is signed out of AWS
 - [ ] `~/course/day2/2_capstone/report.md`: sections A–C filled in
 - [ ] Your 8 rows in the class spreadsheet have a verdict and a reason
 
@@ -575,7 +620,8 @@ The course machines are switched off after the course. To keep your work, in VS 
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| `Unable to locate credentials` | The course machine has lost its role | Tell an instructor |
+| `Unable to locate credentials` | Not signed in yet (or `~/.aws` was deleted) | `aws configure` with your key file (section 6.2). Key file already deleted? Raise your hand |
+| `InvalidClientTokenId` or `SignatureDoesNotMatch` | A key value was pasted with a character missing or extra | Run `aws configure` again and paste each value carefully |
 | `AccessDenied` on S3 | Wrong bucket or prefix | `env \| grep COURSE` and compare with the board |
 | Jobs stay `RUNNABLE` for more than 10 minutes | Machines still starting, or the queue is full | Wait 5 minutes, then tell an instructor |
 | `CannotPullContainerError` | Image tag typo | Check the tag in the module |

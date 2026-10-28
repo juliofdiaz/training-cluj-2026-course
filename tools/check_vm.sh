@@ -106,7 +106,7 @@ if [ $DAY2 -eq 1 ]; then
   if have aws; then
     ok "AWS CLI $(aws --version 2>&1 | awk '{print $1}' | cut -d/ -f2)"
     if ID=$(aws sts get-caller-identity --query Arn --output text 2>/dev/null); then ok "AWS identity: $ID"
-    else bad "No AWS credentials" "the course machine's role is missing: tell an instructor"; fi
+    else bad "No AWS credentials: not signed in yet" "aws configure, with the key file in your home folder (Day 2 handbook, section 6.2)"; fi
     if [ -n "${COURSE_BUCKET:-}" ]; then
       aws s3 ls "$COURSE_BUCKET/data/" >/dev/null 2>&1 && ok "Can read $COURSE_BUCKET/data/" || bad "Cannot read $COURSE_BUCKET/data/" "check COURSE_BUCKET and your permissions"
     else warn "COURSE_BUCKET not set" "export COURSE_BUCKET=s3://<course-bucket>  (on the board)"; fi
